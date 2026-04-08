@@ -7,6 +7,7 @@ import secrets
 import time
 from functools import wraps
 from datetime import UTC, datetime, timedelta
+from urllib.parse import urlparse
 from flask import Flask, request, jsonify, send_from_directory, Response, send_file, session
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -167,13 +168,30 @@ def csrf_exempt_endpoint():
     return request.endpoint in {"index", "send_static", "static"}
 
 
+def is_same_origin_request():
+    fetch_site = request.headers.get("Sec-Fetch-Site")
+    if fetch_site in {"same-origin", "same-site", "none"}:
+        return True
+
+    expected = urlparse(request.host_url)
+    for header_name in ("Origin", "Referer"):
+        value = request.headers.get(header_name)
+        if not value:
+            continue
+        parsed = urlparse(value)
+        if parsed.scheme == expected.scheme and parsed.netloc == expected.netloc:
+            return True
+    return False
+
+
 @app.before_request
 def protect_state_changing_requests():
     ensure_csrf_token()
     if request.method in {"POST", "PUT", "PATCH", "DELETE"} and not csrf_exempt_endpoint():
         expected = session.get("csrf_token")
         provided = request.headers.get("X-CSRF-Token")
-        if not expected or not provided or not secrets.compare_digest(expected, provided):
+        token_is_valid = bool(expected and provided and secrets.compare_digest(expected, provided))
+        if not token_is_valid and not is_same_origin_request():
             return jsonify({"error": "CSRF token không hợp lệ. Hãy refresh trang và thử lại."}), 403
 
 
@@ -2646,9 +2664,9 @@ def api_ai_insight():
             "month": month,
             "dataSource": source,
             "error": str(error),
-            "message": "Không thể gọi OpenAI lúc này. Đang hiển thị phân tích dự phòng theo tháng đang chọn.",
+            "message": "OpenAI chưa khả dụng. Đang hiển thị phân tích local dựa trên dữ liệu giao dịch hiện có.",
             **fallback,
-        }), 503
+        })
     except Exception as error:
         return jsonify({"error": f"Không thể tạo AI insight: {error}"}), 500
 

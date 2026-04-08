@@ -36,14 +36,17 @@ def test_dashboard_and_source_filters_use_demo_data(client):
     real_transactions = client.get("/api/transactions?source=real")
     dashboard = client.get("/api/dashboard-summary?source=sample")
     analytics = client.get("/api/analytics-12m?source=sample")
+    ai_insight = client.get("/api/ai-insight?month=2026-04&source=sample")
 
     assert sample_transactions.status_code == 200
     assert real_transactions.status_code == 200
     assert dashboard.status_code == 200
     assert analytics.status_code == 200
+    assert ai_insight.status_code == 200
     assert len(sample_transactions.get_json()) > 0
     assert real_transactions.get_json() == []
     assert analytics.get_json()["monthly"]
+    assert ai_insight.get_json()["spending_insights"]
 
 
 def test_transaction_crud_marks_manual_source(client):
@@ -237,3 +240,10 @@ def test_csrf_required_for_state_changing_requests(client):
     )
     assert response.status_code == 403
     assert "CSRF" in response.get_json()["error"]
+
+    same_origin = client.post(
+        "/api/chat",
+        headers={"Origin": "http://localhost"},
+        json={"message": "test", "month": "2026-04", "source": "sample"},
+    )
+    assert same_origin.status_code == 200

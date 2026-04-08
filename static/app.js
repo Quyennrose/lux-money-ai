@@ -189,18 +189,31 @@ function todayLocalISO() {
 
 async function requestJson(url, options = {}) {
     const method = (options.method || "GET").toUpperCase();
-    const requestOptions = { ...options };
-    if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
-        if (!csrfToken) {
-            await refreshClientCsrfToken();
+    const shouldSendCsrf = ["POST", "PUT", "PATCH", "DELETE"].includes(method);
+    const buildRequestOptions = () => {
+        const requestOptions = { ...options };
+        if (shouldSendCsrf) {
+            requestOptions.headers = {
+                ...(options.headers || {}),
+                "X-CSRF-Token": csrfToken || "",
+            };
         }
-        requestOptions.headers = {
-            ...(options.headers || {}),
-            "X-CSRF-Token": csrfToken || "",
-        };
+        return requestOptions;
+    };
+    const isCsrfError = (response, data) =>
+        response.status === 403 && String(data.error || "").toLowerCase().includes("csrf");
+
+    if (shouldSendCsrf && !csrfToken) {
+        await refreshClientCsrfToken();
     }
-    const response = await fetch(url, requestOptions);
-    const data = await response.json().catch(() => ({}));
+    let response = await fetch(url, buildRequestOptions());
+    let data = await response.json().catch(() => ({}));
+    if (isCsrfError(response, data)) {
+        csrfToken = null;
+        await refreshClientCsrfToken();
+        response = await fetch(url, buildRequestOptions());
+        data = await response.json().catch(() => ({}));
+    }
     if (data.csrfToken) {
         csrfToken = data.csrfToken;
     }

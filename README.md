@@ -98,6 +98,7 @@ AI dùng backend route, không hardcode key ở frontend.
 - Model: `gpt-4.1-mini`
 - Env var: `OPENAI_API_KEY`
 - Nếu thiếu key hoặc OpenAI lỗi, app trả về fallback local thay vì crash.
+- Nếu chưa điền `OPENAI_API_KEY`, AI vẫn trả lời bằng phân tích local từ giao dịch. Muốn dùng OpenAI thật thì thêm key vào `.env`, lưu file rồi restart `python app.py`.
 
 Ví dụ câu hỏi:
 
