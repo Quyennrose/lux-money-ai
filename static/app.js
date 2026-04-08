@@ -97,6 +97,7 @@ const generateAiInsightBtn = document.getElementById("generate-ai-insight");
 const generateMonthReportBtn = document.getElementById("generate-month-report");
 const generateYearReportBtn = document.getElementById("generate-year-report");
 const aiInsightStatus = document.getElementById("ai-insight-status");
+const aiHealthStatus = document.getElementById("ai-health-status");
 const aiInsightResult = document.getElementById("ai-insight-result");
 const starterChips = document.querySelectorAll(".starter-chip");
 const savingsRateValue = document.getElementById("savings-rate-value");
@@ -126,6 +127,8 @@ const restoreFile = document.getElementById("restore-file");
 const restoreSubmitBtn = restoreForm?.querySelector("button[type='submit']");
 const dataStatus = document.getElementById("data-status");
 const pwaStatus = document.getElementById("pwa-status");
+const resetSessionBtn = document.getElementById("reset-session");
+const sessionStatus = document.getElementById("session-status");
 const tabButtons = document.querySelectorAll(".tab-button");
 const tabPanels = document.querySelectorAll(".tab-panel");
 let editingTransactionId = null;
@@ -231,6 +234,20 @@ async function refreshClientCsrfToken() {
     }
     csrfToken = data.csrfToken;
     return data;
+}
+
+async function fetchHealthStatus() {
+    return requestJson("/api/health");
+}
+
+async function resetClientSessionState() {
+    csrfToken = null;
+    chatHistory = [];
+    await refreshClientCsrfToken();
+    if ("serviceWorker" in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations.map((registration) => registration.update()));
+    }
 }
 
 function switchTab(tabName) {
@@ -1202,6 +1219,21 @@ function refreshPwaStatus() {
         : "Trình duyệt này chưa hỗ trợ service worker/PWA.";
 }
 
+async function refreshAiHealthStatus() {
+    if (!aiHealthStatus) {
+        return;
+    }
+    try {
+        const health = await fetchHealthStatus();
+        const mode = health.openai?.configured && health.openai?.sdkAvailable
+            ? `OpenAI cloud sẵn sàng (${health.openai.model})`
+            : "Đang dùng AI local fallback vì chưa có OPENAI_API_KEY hoặc SDK.";
+        aiHealthStatus.textContent = mode;
+    } catch (error) {
+        aiHealthStatus.textContent = error.message || "Không thể kiểm tra trạng thái AI.";
+    }
+}
+
 function startEditBudget(item) {
     editingBudgetId = item.id;
     budgetCategory.value = item.category;
@@ -1776,6 +1808,21 @@ restoreForm.addEventListener("submit", async (event) => {
     }
 });
 
+resetSessionBtn?.addEventListener("click", async () => {
+    sessionStatus.textContent = "Đang làm mới phiên...";
+    resetSessionBtn.disabled = true;
+    try {
+        await resetClientSessionState();
+        await refreshAuthStatus();
+        await refreshAiHealthStatus();
+        sessionStatus.textContent = "Đã làm mới phiên. Bạn có thể thử lại thao tác vừa lỗi.";
+    } catch (error) {
+        sessionStatus.textContent = error.message || "Không thể làm mới phiên.";
+    } finally {
+        resetSessionBtn.disabled = false;
+    }
+});
+
 csvFile.addEventListener("change", () => {
     populateCsvMappingOptions([]);
     csvPreview.className = "csv-preview empty-state";
@@ -1903,6 +1950,7 @@ initTheme();
 initTabs();
 refreshAuthStatus();
 refreshPwaStatus();
+refreshAiHealthStatus();
 refreshData();
 
 function setDefaultTransactionDate() {

@@ -453,6 +453,7 @@
                     </div>
                 </div>
                 <p id="ai-insight-status" class="status-text">Sẵn sàng phân tích dữ liệu giao dịch.</p>
+                <p id="ai-health-status" class="status-text">Đang kiểm tra chế độ AI...</p>
                 <div id="ai-insight-result" class="ai-insight-result">
                     <div class="empty-state compact-empty">
                         <strong>Chưa tạo AI Spending Insight.</strong>
@@ -544,6 +545,12 @@
                     <h3>PWA</h3>
                     <p class="section-subtitle">App có manifest và service worker để chạy giống app cài đặt trên máy hỗ trợ PWA.</p>
                     <p id="pwa-status" class="status-text">Đang kiểm tra PWA...</p>
+                </div>
+                <div class="data-card">
+                    <h3>Sửa lỗi phiên</h3>
+                    <p class="section-subtitle">Dùng khi trình duyệt báo CSRF token không hợp lệ sau khi server restart, login/logout hoặc PWA cache bản cũ.</p>
+                    <button type="button" id="reset-session" class="secondary-button">Làm mới phiên</button>
+                    <p id="session-status" class="status-text">Sẵn sàng.</p>
                 </div>
             </div>
         </section>
