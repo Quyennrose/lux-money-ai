@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LUX Money AI — Personal Finance Dashboard</title>
+    <meta name="theme-color" content="#0f172a" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="icon" href="icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app-shell">
+        <header>
+            <div class="header-content">
+                <div class="brand-block">
+                    <div class="brand-mark">L</div>
+                    <div>
+                        <span class="brand-eyebrow">Money intelligence dashboard</span>
+                        <h1>LUX Money AI</h1>
+                        <p>Theo dõi dòng tiền, ngân sách và thói quen chi tiêu theo từng tháng với AI phân tích thực tế.</p>
+                    </div>
+                </div>
+                <div class="theme-panel">
+                    <div class="theme-label">Chọn giao diện</div>
+                    <div class="theme-buttons">
+                        <button id="theme-light" class="theme-option">Sáng</button>
+                        <button id="theme-dark" class="theme-option">Tối</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="tab-bar">
+            <button class="tab-button active" data-tab="overview">Tổng quan</button>
+            <button class="tab-button" data-tab="transactions">Giao dịch</button>
+            <button class="tab-button" data-tab="budgets">Ngân sách</button>
+            <button class="tab-button" data-tab="recurring">Định kỳ</button>
+            <button class="tab-button" data-tab="goals">Mục tiêu</button>
+            <button class="tab-button" data-tab="ai">AI</button>
+            <button class="tab-button" data-tab="data">Dữ liệu</button>
+        </div>
+
+        <section class="panel dashboard-month-panel tab-panel active" data-tab="overview">
+            <div class="section-header">
+                <div>
+                    <h2>Tổng quan theo tháng</h2>
+                    <p class="section-subtitle">Chọn tháng để dashboard, ngân sách, giao dịch và AI insight chỉ tính trên đúng kỳ đó.</p>
+                </div>
+                <label class="month-control">Tháng đang xem
+                    <input type="month" id="overview-month" />
+                </label>
+            </div>
+        </section>
+
+        <section class="panel tab-panel" data-tab="transactions">
+            <h2>Thêm giao dịch</h2>
+            <form id="transaction-form" class="form-grid">
+                <label>Mô tả</label>
+                <input type="text" id="description" placeholder="Ví dụ: Mua đồ siêu thị" required />
+                <label>Số tiền</label>
+                <input type="number" id="amount" step="0.01" placeholder="100000" required />
+                <label>Ngày giao dịch</label>
+                <input type="date" id="transaction-date" required />
+                <label>Loại</label>
+                <select id="type">
+                    <option value="expense">Chi tiêu</option>
+                    <option value="income">Thu nhập</option>
+                </select>
+                <label>Danh mục</label>
+                <select id="category">
+                    <option value="">Tự động (dựa trên mô tả)</option>
+                    <option value="Ăn uống">Ăn uống</option>
+                    <option value="Đi lại">Đi lại</option>
+                    <option value="Giải trí">Giải trí</option>
+                    <option value="Hóa đơn">Hóa đơn</option>
+                    <option value="Mua sắm">Mua sắm</option>
+                    <option value="Tiết kiệm">Tiết kiệm</option>
+                    <option value="Đầu tư">Đầu tư</option>
+                    <option value="Khác">Khác</option>
+                </select>
+                <div class="form-actions">
+                    <button type="submit" id="submit-transaction">Lưu giao dịch</button>
+                    <button type="button" id="cancel-edit-transaction" class="secondary-button hidden">Hủy chỉnh sửa</button>
+                </div>
+            </form>
+        </section>
+
+        <section class="panel tab-panel" data-tab="budgets">
+            <h2>Ngân sách tháng</h2>
+            <form id="budget-form">
+                <label>Danh mục</label>
+                <input type="text" id="budget-category" placeholder="Ví dụ: Ăn uống" required />
+                <label>Số tiền ngân sách</label>
+                <input type="number" id="budget-amount" step="0.01" placeholder="500000" required />
+                <label>Tháng</label>
+                <input type="month" id="budget-month" />
+                <div class="form-actions">
+                    <button type="submit" id="budget-submit">Lưu ngân sách</button>
+                    <button type="button" id="cancel-edit-budget" class="secondary-button hidden">Hủy chỉnh sửa</button>
+                </div>
+            </form>
+        </section>
+
+        <section class="panel tab-panel" data-tab="goals">
+            <h2>Mục tiêu tiết kiệm</h2>
+            <form id="goal-form">
+                <label>Tên mục tiêu</label>
+                <input type="text" id="goal-name" placeholder="Ví dụ: Du lịch" required />
+                <label>Số tiền cần đạt</label>
+                <input type="number" id="goal-target" step="0.01" placeholder="10000000" required />
+                <label>Tiền đã tiết kiệm</label>
+                <input type="number" id="goal-saved" step="0.01" placeholder="2000000" required />
+                <label>Hạn chót</label>
+                <input type="date" id="goal-deadline" />
+                <button type="submit">Lưu mục tiêu</button>
+            </form>
+        </section>
+
+        <section class="panel tab-panel stats-grid overview-strip-panel active" data-tab="overview">
+            <div class="section-header overview-strip-header">
+                <div>
+                    <h2>Tóm tắt dòng tiền</h2>
+                    <p class="section-subtitle">Các chỉ số chính của tháng đang xem, trình bày gọn để quét nhanh trên desktop.</p>
+                </div>
+            </div>
+            <div class="card overview-card income-card">
+                <span class="metric-pill">IN</span>
+                <div>
+                    <h3>Thu nhập</h3>
+                    <p id="income-value">0</p>
+                </div>
+            </div>
+            <div class="card overview-card expense-card">
+                <span class="metric-pill">OUT</span>
+                <div>
+                    <h3>Chi tiêu</h3>
+                    <p id="expense-value">0</p>
+                </div>
+            </div>
+            <div class="card overview-card balance-card">
+                <span class="metric-pill">NET</span>
+                <div>
+                    <h3>Số dư</h3>
+                    <p id="balance-value">0</p>
+                </div>
+            </div>
+            <div class="card overview-card ai-card">
+                <span class="metric-pill">AI</span>
+                <div>
+                    <h3>VIP Score</h3>
+                    <p id="ai-score-value">0</p>
+                </div>
+            </div>
+            <div class="card overview-card ai-card">
+                <span class="metric-pill">RISK</span>
+                <div>
+                    <h3>VIP Risk</h3>
+                    <p id="risk-level-value">Trung bình</p>
+                </div>
+            </div>
+            <div class="card overview-card ai-card">
+                <span class="metric-pill">HLTH</span>
+                <div>
+                    <h3>Health Index</h3>
+                    <p id="health-index-value">--</p>
+                </div>
+            </div>
+            <div class="card overview-card ai-card">
+                <span class="metric-pill">BUD</span>
+                <div>
+                    <h3>Ngân sách tuân thủ</h3>
+                    <p id="budget-adherence-value">--</p>
+                </div>
+            </div>
+            <div class="card overview-card premium-card">
+                <span class="metric-pill">SAVE</span>
+                <div>
+                    <h3>Tỷ lệ tiết kiệm</h3>
+                    <p id="savings-rate-value">--</p>
+                </div>
+            </div>
+            <div class="card overview-card premium-card">
+                <span class="metric-pill">TOP</span>
+                <div>
+                    <h3>Top danh mục</h3>
+                    <p id="top-category-value">--</p>
+                </div>
+            </div>
+            <div class="card overview-card premium-card">
+                <span class="metric-pill">MAX</span>
+                <div>
+                    <h3>Chi lớn nhất</h3>
+                    <p id="biggest-expense-value">--</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel tab-panel" data-tab="transactions">
+            <div class="section-header">
+                <div>
+                    <h2>Transaction Command Center</h2>
+                    <p class="section-subtitle">Lọc, tìm kiếm, sắp xếp và rà soát giao dịch theo tháng.</p>
+                </div>
+                <button id="export-csv">Xuất báo cáo CSV</button>
+                <button id="export-report" class="secondary-button">Xuất report HTML</button>
+            </div>
+            <div class="filter-grid">
+                <label>Tháng
+                    <input type="month" id="filter-month" />
+                </label>
+                <label>Nguồn dữ liệu
+                    <select id="filter-source">
+                        <option value="all">Tất cả</option>
+                        <option value="sample">Dữ liệu mẫu</option>
+                        <option value="real">Dữ liệu thật</option>
+                        <option value="manual">Nhập tay</option>
+                        <option value="import">Import CSV</option>
+                    </select>
+                </label>
+                <label>Loại
+                    <select id="filter-type">
+                        <option value="">Tất cả</option>
+                        <option value="income">Thu nhập</option>
+                        <option value="expense">Chi tiêu</option>
+                    </select>
+                </label>
+                <label>Danh mục
+                    <input type="text" id="filter-category" placeholder="Ví dụ: Ăn uống" />
+                </label>
+                <label>Tìm kiếm
+                    <input type="search" id="filter-search" placeholder="Tìm theo ghi chú..." />
+                </label>
+                <label>Sắp xếp
+                    <select id="filter-sort">
+                        <option value="newest">Mới nhất</option>
+                        <option value="oldest">Cũ nhất</option>
+                        <option value="highest">Số tiền cao nhất</option>
+                        <option value="lowest">Số tiền thấp nhất</option>
+                    </select>
+                </label>
+            </div>
+        </section>
+
+        <section class="panel tab-panel" data-tab="transactions">
+            <div class="section-header">
+                <div>
+                    <h2>Import CSV giao dịch</h2>
+                    <p class="section-subtitle">Upload CSV ngân hàng hoặc file tự xuất. Bỏ trống mapping nếu file dùng tên cột phổ biến như date, amount, note.</p>
+                </div>
+            </div>
+            <form id="csv-import-form" class="form-grid import-grid">
+                <label>File CSV
+                    <input type="file" id="csv-file" accept=".csv,.tsv,text/csv,text/tab-separated-values" required />
+                </label>
+                <label>Cột ngày
+                    <select id="csv-date-column" data-placeholder="Tự nhận diện"></select>
+                </label>
+                <label>Cột số tiền
+                    <select id="csv-amount-column" data-placeholder="Tự nhận diện"></select>
+                </label>
+                <label>Cột debit
+                    <select id="csv-debit-column" data-placeholder="Không dùng"></select>
+                </label>
+                <label>Cột credit
+                    <select id="csv-credit-column" data-placeholder="Không dùng"></select>
+                </label>
+                <label>Cột ghi chú
+                    <select id="csv-note-column" data-placeholder="Tự nhận diện"></select>
+                </label>
+                <label>Cột loại
+                    <select id="csv-type-column" data-placeholder="Không dùng"></select>
+                </label>
+                <label>Cột danh mục
+                    <select id="csv-category-column" data-placeholder="Tự phân loại"></select>
+                </label>
+                <button type="button" id="csv-preview-submit" class="secondary-button">Xem trước</button>
+                <button type="submit" id="csv-import-submit">Import CSV</button>
+            </form>
+            <div id="csv-preview" class="csv-preview empty-state">Chọn file rồi bấm “Xem trước” để kiểm tra mapping trước khi import.</div>
+            <div id="csv-import-result" class="import-result empty-state">Chưa import file nào.</div>
+        </section>
+
+        <section class="panel tab-panel active" data-tab="overview">
+            <h2>Xu hướng theo tháng</h2>
+            <canvas id="trend-chart" height="300"></canvas>
+        </section>
+
+        <section class="panel analytics-panel tab-panel active" data-tab="overview">
+            <div class="section-header">
+                <div>
+                    <h2>Analytics 12 tháng</h2>
+                    <p class="section-subtitle">Nhìn nhanh dòng tiền, tỷ lệ tiết kiệm và tháng có chi tiêu cao nhất.</p>
+                </div>
+            </div>
+            <div id="analytics-summary" class="analytics-summary-grid"></div>
+            <canvas id="cashflow-chart" height="220"></canvas>
+            <div class="advanced-analytics-grid">
+                <div class="advanced-analytics-card">
+                    <h3>So với trung bình 12 tháng</h3>
+                    <div id="analytics-comparison" class="analytics-comparison"></div>
+                </div>
+                <div class="advanced-analytics-card">
+                    <h3>Heatmap chi tiêu tháng</h3>
+                    <div id="daily-heatmap" class="daily-heatmap"></div>
+                </div>
+            </div>
+            <div class="advanced-analytics-card category-trend-card">
+                <h3>Xu hướng top danh mục</h3>
+                <canvas id="category-trend-chart" height="240"></canvas>
+            </div>
+        </section>
+
+        <section class="panel tab-panel active" data-tab="overview">
+            <h2>Phân tích tài chính</h2>
+            <div id="ai-analysis">
+                <p><strong>Xu hướng:</strong> <span id="trend-text">Đang tải...</span></p>
+                <p><strong>Thu nhập dự báo 30 ngày:</strong> <span id="forecast-income">0</span></p>
+                <p><strong>Chi tiêu dự báo 30 ngày:</strong> <span id="forecast-expense">0</span></p>
+                <p><strong>Tiết kiệm đề xuất:</strong> <span id="forecast-savings">0</span></p>
+                <div id="advice-list"></div>
+                <div id="quick-insights-list" class="quick-insights-list"></div>
+            </div>
+        </section>
+
+        <section class="panel vip-panel tab-panel active" data-tab="overview">
+            <div class="section-header">
+                <div>
+                    <h2>LUX AI VIP Insights</h2>
+                    <p class="section-subtitle">Bản phân tích executive cho tháng hiện tại: rủi ro, cơ hội và hành động ưu tiên.</p>
+                </div>
+                <button id="load-demo-data" class="secondary-button">Nạp dữ liệu mẫu 12 tháng</button>
+            </div>
+            <div class="vip-grid">
+                <div class="vip-card">
+                    <h3>Tổng quan VIP</h3>
+                    <p id="vip-insight-text">Tải dữ liệu để hiển thị gợi ý VIP.</p>
+                    <div class="vip-metric-grid">
+                        <div>
+                            <span>Runway</span>
+                            <strong id="vip-runway-value">--</strong>
+                        </div>
+                        <div>
+                            <span>Focus</span>
+                            <strong id="vip-focus-value">--</strong>
+                        </div>
+                        <div>
+                            <span>Risk</span>
+                            <strong id="vip-risk-value">--</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="vip-card">
+                    <h3>Ưu tiên hành động</h3>
+                    <ul id="vip-insights-list"></ul>
+                </div>
+            </div>
+            <div class="vip-ask-box">
+                <div>
+                    <h3>Hỏi LUX AI ngay trên dashboard</h3>
+                    <p class="section-subtitle">Ví dụ: “Tháng này tôi chi nhiều nhất ở đâu?” hoặc “Làm sao tiết kiệm hơn tháng sau?”</p>
+                </div>
+                <div class="vip-ask-row">
+                    <input type="text" id="vip-ask-input" placeholder="Nhập câu hỏi bất kỳ về dữ liệu tài chính..." />
+                    <button id="vip-ask-send">Hỏi AI</button>
+                </div>
+                <div id="vip-ask-answer" class="vip-ask-answer">AI sẽ trả lời dựa trên giao dịch thật trong app.</div>
+            </div>
+        </section>
+
+        <section class="panel strategy-panel tab-panel active" data-tab="overview">
+            <h2>Chiến lược tài chính cá nhân</h2>
+            <div class="strategy-grid">
+                <div class="strategy-card">
+                    <h3>Phong cách tài chính</h3>
+                    <p id="financial-style-value">Đang phân tích...</p>
+                </div>
+                <div class="strategy-card">
+                    <h3>Giới hạn chi tiêu</h3>
+                    <p id="spending-target-value">Đang tải...</p>
+                </div>
+                <div class="strategy-card">
+                    <h3>Tiết kiệm mục tiêu</h3>
+                    <p id="savings-velocity-value">Đang tải...</p>
+                </div>
+                <div class="strategy-card">
+                    <h3>Mục tiêu ưu tiên</h3>
+                    <p id="priority-goal-value">Đang tải...</p>
+                </div>
+            </div>
+            <div class="blueprint-block">
+                <h3>Bản đồ tài chính</h3>
+                <p id="financial-blueprint-text">Các bước thông minh sẽ hiện ra sau khi bạn nhập dữ liệu.</p>
+            </div>
+            <ul id="goal-suggestion-list" class="advisor-list"></ul>
+        </section>
+
+        <section class="panel tab-panel active" data-tab="overview">
+            <h2>Kế hoạch tối ưu</h2>
+            <div id="optimization-plan"></div>
+        </section>
+
+        <section class="panel tab-panel active" data-tab="overview">
+            <h2>Phân bổ theo danh mục</h2>
+            <div id="category-breakdown"></div>
+            <canvas id="category-chart" height="220"></canvas>
+        </section>
+
+        <section class="panel tab-panel" data-tab="budgets">
+            <h2>Tiến trình ngân sách</h2>
+            <div id="budget-progress"></div>
+        </section>
+
+        <section class="panel tab-panel" data-tab="budgets">
+            <div class="section-header">
+                <div>
+                    <h2>Gợi ý ngân sách tháng sau</h2>
+                    <p class="section-subtitle">Dựa trên chi tiêu gần đây để đề xuất mức ngân sách thực tế hơn.</p>
+                </div>
+            </div>
+            <div id="budget-suggestions"></div>
+        </section>
+
+        <section class="panel tab-panel" data-tab="budgets">
+            <h2>Danh sách ngân sách</h2>
+            <div id="budget-list"></div>
+        </section>
+
+        <section class="panel tab-panel" data-tab="recurring">
+            <div class="section-header">
+                <div>
+                    <h2>Khoản định kỳ</h2>
+                    <p class="section-subtitle">Tự phát hiện các khoản lặp lại như thuê nhà, hóa đơn, subscription hoặc đầu tư định kỳ từ giao dịch hiện có.</p>
+                </div>
+            </div>
+            <div id="recurring-summary" class="recurring-summary"></div>
+            <div id="recurring-list" class="recurring-grid"></div>
+        </section>
+
+        <section class="panel chat-panel tab-panel" data-tab="ai">
+            <h2>Hỏi AI Tài Chính</h2>
+            <div class="ai-insight-panel">
+                <div class="section-header">
+                    <div>
+                        <h3>AI Spending Insights</h3>
+                        <p>Phân tích giao dịch bằng OpenAI và đề xuất hành động tiếp theo.</p>
+                    </div>
+                    <div class="ai-report-actions">
+                        <button id="generate-ai-insight" class="secondary-button">Tạo phân tích AI</button>
+                        <button id="generate-month-report" class="secondary-button">Report tháng</button>
+                        <button id="generate-year-report" class="secondary-button">Report 12 tháng</button>
+                    </div>
+                </div>
+                <p id="ai-insight-status" class="status-text">Sẵn sàng phân tích dữ liệu giao dịch.</p>
+                <div id="ai-insight-result" class="ai-insight-result">
+                    <div class="empty-state compact-empty">
+                        <strong>Chưa tạo AI Spending Insight.</strong>
+                        <p>Bấm “Tạo phân tích AI” để xem brief theo tháng đang chọn, gồm tổng quan, mẫu chi tiêu và hành động nên làm.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="chat-container">
+                <div class="chat-product-header">
+                    <div>
+                        <h3>LUX AI Assistant</h3>
+                        <p class="section-subtitle">Hỏi tự do về chi tiêu, ngân sách, so sánh tháng và kế hoạch tiết kiệm. AI sẽ dùng dữ liệu giao dịch hiện có.</p>
+                    </div>
+                    <label class="ai-scope-control">Phạm vi
+                        <select id="ai-scope">
+                            <option value="month">Tháng đang xem</option>
+                            <option value="year">12 tháng gần nhất</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="starter-chip-row">
+                    <button class="starter-chip" data-question="What did I spend most on this month?">What did I spend most on this month?</button>
+                    <button class="starter-chip" data-question="Compare this month to last month">Compare this month to last month</button>
+                    <button class="starter-chip" data-question="How can I save more next month?">How can I save more next month?</button>
+                    <button class="starter-chip" data-question="Which spending category looks risky?">Which category looks risky?</button>
+                </div>
+                <div id="chat-messages" class="chat-messages"></div>
+                <div class="chat-input-container">
+                    <input type="text" id="chat-input" placeholder="Hỏi AI về tài chính của bạn..." />
+                    <button id="chat-send">Gửi</button>
+                </div>
+                <button id="clear-chat" class="secondary-button">Xóa hội thoại</button>
+            </div>
+        </section>
+
+        <section class="panel tab-panel" data-tab="goals">
+            <h2>Mục tiêu tiết kiệm</h2>
+            <div id="goals-list"></div>
+        </section>
+
+        <section class="panel tab-panel" data-tab="transactions">
+            <h2>Giao dịch theo tháng</h2>
+            <div id="transactions-list"></div>
+        </section>
+
+        <section class="panel tab-panel data-panel" data-tab="data">
+            <div class="section-header">
+                <div>
+                    <h2>Dữ liệu, tài khoản & cài đặt app</h2>
+                    <p class="section-subtitle">Backup/restore SQLite, đăng nhập local và cài app như PWA. Dữ liệu mẫu hiện tại không bị xóa trừ khi bạn restore DB khác.</p>
+                </div>
+            </div>
+            <div class="data-grid">
+                <div class="data-card">
+                    <h3>Tài khoản local</h3>
+                    <p id="auth-status" class="section-subtitle">Đang kiểm tra trạng thái...</p>
+                    <form id="auth-form" class="form-grid compact-form">
+                        <label>Email
+                            <input type="email" id="auth-email" placeholder="you@example.com" required />
+                        </label>
+                        <label>Tên hiển thị
+                            <input type="text" id="auth-name" placeholder="Tên của bạn" />
+                        </label>
+                        <label>Mật khẩu
+                            <input type="password" id="auth-password" placeholder="Tối thiểu 6 ký tự" required />
+                        </label>
+                        <div class="form-actions">
+                            <button type="button" id="auth-login">Đăng nhập</button>
+                            <button type="button" id="auth-register" class="secondary-button">Tạo tài khoản</button>
+                            <button type="button" id="auth-logout" class="secondary-button">Đăng xuất</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="data-card">
+                    <h3>Backup / Restore</h3>
+                    <p class="section-subtitle">Backup tải file `finance.db`. Restore sẽ thay DB hiện tại và app tự tạo bản `.bak` trước khi ghi đè. Trên web public, phần này chỉ dành cho admin.</p>
+                    <div class="form-actions">
+                        <button type="button" id="backup-db">Tải backup DB</button>
+                    </div>
+                    <form id="restore-form" class="form-grid compact-form">
+                        <label>File backup SQLite
+                            <input type="file" id="restore-file" accept=".db,.sqlite,.sqlite3,application/octet-stream" />
+                        </label>
+                        <button type="submit" class="danger-fill">Restore DB</button>
+                    </form>
+                    <p id="data-status" class="status-text">Chưa có thao tác dữ liệu.</p>
+                </div>
+                <div class="data-card">
+                    <h3>PWA</h3>
+                    <p class="section-subtitle">App có manifest và service worker để chạy giống app cài đặt trên máy hỗ trợ PWA.</p>
+                    <p id="pwa-status" class="status-text">Đang kiểm tra PWA...</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div id="transaction-modal" class="modal-backdrop hidden" aria-hidden="true">
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="transaction-modal-title">
+            <div class="section-header">
+                <div>
+                    <h3 id="transaction-modal-title">Chỉnh sửa giao dịch</h3>
+                    <p class="section-subtitle">Cập nhật ngày, danh mục, số tiền và ghi chú.</p>
+                </div>
+                <button type="button" id="close-transaction-modal" class="icon-button">×</button>
+            </div>
+            <form id="edit-transaction-form" class="form-grid">
+                <input type="hidden" id="edit-transaction-id" />
+                <label>Ghi chú
+                    <input type="text" id="edit-description" required />
+                </label>
+                <label>Số tiền
+                    <input type="number" id="edit-amount" step="0.01" required />
+                </label>
+                <label>Ngày
+                    <input type="date" id="edit-date" required />
+                </label>
+                <label>Loại
+                    <select id="edit-type">
+                        <option value="expense">Chi tiêu</option>
+                        <option value="income">Thu nhập</option>
+                    </select>
+                </label>
+                <label>Danh mục
+                    <input type="text" id="edit-category" required />
+                </label>
+                <div class="form-actions">
+                    <button type="submit">Lưu thay đổi</button>
+                    <button type="button" id="cancel-modal-edit" class="secondary-button">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", () => {
+                navigator.serviceWorker.register("/sw.js").catch(() => {});
+            });
+        }
+    </script>
+</body>
+</html>

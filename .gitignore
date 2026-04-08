@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Node / browser test artifacts
+node_modules/
+playwright-report/
+test-results/
+
+# Local environment/secrets
+.env
+
+# Local SQLite data
+finance.db
+finance.db.before-restore-*.bak
+*.sqlite
+*.sqlite3
+*.db-wal
+*.db-shm
+*.db-journal
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Generated exports
+bao-cao-tai-chinh-*.csv
+bao-cao-tai-chinh-*.html

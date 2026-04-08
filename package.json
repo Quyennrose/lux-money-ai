@@ -1,0 +1,14 @@
+{
+  "name": "lux-money-ai",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Local Flask + SQLite personal finance dashboard",
+  "scripts": {
+    "e2e:install": "playwright install chromium",
+    "e2e": "playwright test",
+    "e2e:headed": "playwright test --headed"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.51.0"
+  }
+}

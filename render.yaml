@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: lux-money-ai
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    healthCheckPath: /api/health
+    disk:
+      name: lux-money-data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: DB_PATH
+        value: /data/finance.db
+      - key: SESSION_COOKIE_SECURE
+        value: "true"
+      - key: ADMIN_EMAILS
+        sync: false
+      - key: ENABLE_DEMO_DATA
+        value: "false"
+      - key: ENABLE_DB_RESTORE
+        value: "false"
+      - key: MAX_UPLOAD_MB
+        value: "5"
