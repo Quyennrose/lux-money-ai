@@ -54,8 +54,10 @@ const exportCsv = document.getElementById("export-csv");
 const exportReport = document.getElementById("export-report");
 const csvImportForm = document.getElementById("csv-import-form");
 const csvFile = document.getElementById("csv-file");
+const csvDateOrder = document.getElementById("csv-date-order");
 const csvPreviewSubmit = document.getElementById("csv-preview-submit");
 const csvImportSubmit = document.getElementById("csv-import-submit");
+const csvClearImport = document.getElementById("csv-clear-import");
 const csvPreview = document.getElementById("csv-preview");
 const csvImportResult = document.getElementById("csv-import-result");
 const csvMappingInputs = {
@@ -470,6 +472,7 @@ async function importCsvFile() {
             formData.append(key, input.value.trim());
         }
     });
+    formData.append("date_order", csvDateOrder?.value || "auto");
     return requestJson("/api/import/csv", {
         method: "POST",
         body: formData,
@@ -484,10 +487,15 @@ async function previewCsvFile() {
             formData.append(key, input.value.trim());
         }
     });
+    formData.append("date_order", csvDateOrder?.value || "auto");
     return requestJson("/api/import/csv/preview", {
         method: "POST",
         body: formData,
     });
+}
+
+async function clearImportedTransactions() {
+    return requestJson("/api/import/csv", { method: "DELETE" });
 }
 
 function populateCsvMappingOptions(headers = [], suggestedMapping = {}) {
@@ -507,6 +515,9 @@ function populateCsvMappingOptions(headers = [], suggestedMapping = {}) {
 
 function renderCsvPreview(data) {
     populateCsvMappingOptions(data.headers || [], data.suggestedMapping || {});
+    if (csvDateOrder && data.suggestedMapping?.date_order && csvDateOrder.value === "auto") {
+        csvDateOrder.dataset.detectedOrder = data.suggestedMapping.date_order;
+    }
     const rows = data.previewRows || [];
     const errors = data.errors || [];
     if (!rows.length && !errors.length) {
@@ -536,7 +547,7 @@ function renderCsvPreview(data) {
     csvPreview.innerHTML = `
         <div class="csv-preview-header">
             <strong>Preview ${rows.length}/${data.totalRows || rows.length} dòng</strong>
-            <span>Mapping đã được gợi ý tự động. Có thể chỉnh dropdown rồi bấm “Xem trước” lại.</span>
+            <span>Mapping đã được gợi ý tự động. Định dạng ngày: ${escapeHtml(data.suggestedMapping?.date_order || "auto")}. Có thể chỉnh dropdown rồi bấm “Xem trước” lại.</span>
         </div>
         <div class="csv-preview-table-wrap">
             <table class="csv-preview-table">
@@ -1834,7 +1845,7 @@ csvFile.addEventListener("change", () => {
 
 csvPreviewSubmit.addEventListener("click", async () => {
     if (!csvFile.files.length) {
-        csvPreview.textContent = "Vui lòng chọn file CSV.";
+        csvPreview.textContent = "Vui lòng chọn file CSV/TSV/XLSX.";
         return;
     }
     csvPreviewSubmit.disabled = true;
@@ -1846,7 +1857,7 @@ csvPreviewSubmit.addEventListener("click", async () => {
         renderCsvPreview(result);
     } catch (error) {
         csvPreview.className = "csv-preview empty-state";
-        csvPreview.textContent = error.message || "Không thể preview CSV.";
+        csvPreview.textContent = error.message || "Không thể preview file.";
     } finally {
         csvPreviewSubmit.disabled = false;
         csvPreviewSubmit.textContent = "Xem trước";
@@ -1856,12 +1867,12 @@ csvPreviewSubmit.addEventListener("click", async () => {
 csvImportForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (!csvFile.files.length) {
-        csvImportResult.textContent = "Vui lòng chọn file CSV.";
+        csvImportResult.textContent = "Vui lòng chọn file CSV/TSV/XLSX.";
         return;
     }
     csvImportSubmit.disabled = true;
     csvImportSubmit.textContent = "Đang import...";
-    csvImportResult.textContent = "Đang đọc file CSV...";
+    csvImportResult.textContent = "Đang đọc file...";
     try {
         const result = await importCsvFile();
         const errorPreview = (result.errors || [])
@@ -1869,16 +1880,37 @@ csvImportForm.addEventListener("submit", async (event) => {
             .map((item) => `Dòng ${item.row}: ${item.error}`)
             .join(" | ");
         csvImportResult.innerHTML = `
-            <strong>${escapeHtml(result.message || "Đã import CSV")}</strong>
+            <strong>${escapeHtml(result.message || "Đã import file")}</strong>
             <p>Thêm mới: ${Number(result.inserted || 0)} · Bỏ qua trùng: ${Number(result.skippedDuplicates || 0)} · Lỗi: ${Number(result.errorCount || 0)}</p>
             ${errorPreview ? `<p>${escapeHtml(errorPreview)}</p>` : ""}
         `;
         await refreshData();
     } catch (error) {
-        csvImportResult.textContent = error.message || "Import CSV thất bại.";
+        csvImportResult.textContent = error.message || "Import file thất bại.";
     } finally {
         csvImportSubmit.disabled = false;
-        csvImportSubmit.textContent = "Import CSV";
+        csvImportSubmit.textContent = "Import file";
+    }
+});
+
+csvClearImport?.addEventListener("click", async () => {
+    const confirmed = window.confirm("Xóa tất cả giao dịch đã import? Dữ liệu mẫu và giao dịch nhập tay sẽ được giữ lại.");
+    if (!confirmed) {
+        return;
+    }
+    csvClearImport.disabled = true;
+    csvImportResult.textContent = "Đang xóa dữ liệu import...";
+    try {
+        const result = await clearImportedTransactions();
+        csvImportResult.innerHTML = `
+            <strong>${escapeHtml(result.message || "Đã xóa dữ liệu import")}</strong>
+            <p>Đã xóa: ${Number(result.deleted || 0)} giao dịch import.</p>
+        `;
+        await refreshData();
+    } catch (error) {
+        csvImportResult.textContent = error.message || "Không thể xóa dữ liệu import.";
+    } finally {
+        csvClearImport.disabled = false;
     }
 });
 

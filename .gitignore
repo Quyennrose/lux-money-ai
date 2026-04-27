@@ -20,12 +20,19 @@ test-results/
 
 # Local SQLite data
 finance.db
+finance.db.before-import-*.bak
+finance.db.before-reimport-*.bak
 finance.db.before-restore-*.bak
+finance.db.before-sample-only-*.bak
 *.sqlite
 *.sqlite3
 *.db-wal
 *.db-shm
 *.db-journal
+
+# Local import/test artifacts
+data/imports/
+logs/
 
 # OS/editor noise
 .DS_Store

@@ -16,6 +16,8 @@ import io
 import json
 import unicodedata
 import html
+import zipfile
+import xml.etree.ElementTree as ET
 
 try:
     from openai import OpenAI, OpenAIError
@@ -55,6 +57,7 @@ DEFAULT_CATEGORY = "Khác"
 VALID_TRANSACTION_TYPES = {"income", "expense"}
 VALID_TRANSACTION_SOURCES = {"sample", "manual", "import"}
 VALID_SOURCE_FILTERS = {"all", "sample", "manual", "import", "real"}
+VALID_DATE_ORDERS = {"auto", "dmy", "mdy", "ymd"}
 OPENAI_MODEL = "gpt-4.1-mini"
 APP_VERSION = "1.0.0"
 DEMO_TRANSACTION_NOTES = {
@@ -309,12 +312,60 @@ def normalize_column_name(value):
     return normalize_ai_text(clean_text(value)).replace("_", " ").replace("-", " ")
 
 
-def parse_import_date(value):
+EXCEL_DATE_BASE = datetime(1899, 12, 30)
+XLSX_NS = {"sheet": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
+
+
+def excel_serial_to_date(value):
+    try:
+        numeric = float(clean_text(value))
+    except (TypeError, ValueError):
+        return None
+    if 1 <= numeric <= 80000:
+        return (EXCEL_DATE_BASE + timedelta(days=numeric)).date().isoformat()
+    return None
+
+
+def infer_date_order(rows, date_col):
+    if not date_col:
+        return "dmy"
+    votes = {"dmy": 0, "mdy": 0}
+    for row in rows[:500]:
+        text = clean_text(row.get(date_col))
+        text = text.split("T")[0].split(" ")[0]
+        parts = text.replace("-", "/").split("/")
+        if len(parts) < 3 or not parts[0].isdigit() or not parts[1].isdigit():
+            continue
+        first = int(parts[0])
+        second = int(parts[1])
+        if first > 12 >= second:
+            votes["dmy"] += 1
+        elif second > 12 >= first:
+            votes["mdy"] += 1
+    return "mdy" if votes["mdy"] > votes["dmy"] else "dmy"
+
+
+def parse_import_date(value, date_order="dmy"):
     text = clean_text(value)
     if not text:
         raise ValueError("Thiếu ngày giao dịch")
+
+    excel_date = excel_serial_to_date(text)
+    if excel_date:
+        return excel_date
+
     text = text.split("T")[0].split(" ")[0]
-    for fmt in ("%Y-%m-%d", "%d/%m/%Y", "%m/%d/%Y", "%d-%m-%Y", "%Y/%m/%d", "%d.%m.%Y"):
+    normalized_order = clean_text(date_order, "dmy").lower()
+    if normalized_order not in VALID_DATE_ORDERS or normalized_order == "auto":
+        normalized_order = "dmy"
+
+    ordered_formats = ["%Y-%m-%d", "%Y/%m/%d", "%d.%m.%Y", "%d.%m.%y"]
+    if normalized_order == "mdy":
+        ordered_formats.extend(["%m/%d/%Y", "%m/%d/%y", "%m-%d-%Y", "%m-%d-%y", "%d/%m/%Y", "%d/%m/%y", "%d-%m-%Y", "%d-%m-%y"])
+    else:
+        ordered_formats.extend(["%d/%m/%Y", "%d/%m/%y", "%d-%m-%Y", "%d-%m-%y", "%m/%d/%Y", "%m/%d/%y", "%m-%d-%Y", "%m-%d-%y"])
+
+    for fmt in ordered_formats:
         try:
             return datetime.strptime(text, fmt).date().isoformat()
         except ValueError:
@@ -374,12 +425,12 @@ def pick_csv_column(headers, requested, candidates):
 
 
 CSV_COLUMN_CANDIDATES = {
-    "date_column": ["date", "ngày", "ngay", "transaction date", "posted date"],
-    "amount_column": ["amount", "số tiền", "so tien", "money", "value"],
+    "date_column": ["date", "ngày", "ngay", "transaction date", "posted date", "date / time", "datetime"],
+    "amount_column": ["amount", "số tiền", "so tien", "money", "value", "debit/credit", "debit credit"],
     "debit_column": ["debit", "withdrawal", "chi", "tien ra", "out"],
     "credit_column": ["credit", "deposit", "thu", "tien vao", "in"],
-    "note_column": ["note", "description", "memo", "nội dung", "noi dung", "ghi chú", "ghi chu", "details"],
-    "type_column": ["type", "loại", "loai", "direction"],
+    "note_column": ["note", "description", "transaction description", "memo", "nội dung", "noi dung", "ghi chú", "ghi chu", "details", "mode", "sub category"],
+    "type_column": ["type", "loại", "loai", "direction", "transaction type", "income/expense", "income expense"],
     "category_column": ["category", "danh mục", "danh muc"],
 }
 
@@ -1093,10 +1144,82 @@ def update_transaction(transaction_id, description, amount, type_, category=None
     return cursor.rowcount
 
 
+def xlsx_column_index(cell_ref):
+    letters = "".join(char for char in cell_ref if char.isalpha())
+    index = 0
+    for char in letters:
+        index = index * 26 + (ord(char.upper()) - 64)
+    return max(index - 1, 0)
+
+
+def read_xlsx_cell(cell, shared_strings):
+    value_node = cell.find("sheet:v", XLSX_NS)
+    value = "" if value_node is None or value_node.text is None else value_node.text
+    if cell.attrib.get("t") == "s" and value:
+        return shared_strings[int(value)]
+    if cell.attrib.get("t") == "inlineStr":
+        return "".join(node.text or "" for node in cell.findall(".//sheet:t", XLSX_NS))
+    return value
+
+
+def rows_to_dicts(rows):
+    if not rows:
+        raise ValueError("File cần có dòng header")
+    headers = [clean_text(header) for header in rows[0]]
+    while headers and not headers[-1]:
+        headers.pop()
+    if not headers or not any(headers):
+        raise ValueError("File cần có dòng header")
+    data_rows = []
+    for values in rows[1:]:
+        if not any(clean_text(value) for value in values):
+            continue
+        item = {}
+        for index, header in enumerate(headers):
+            if header:
+                item[header] = values[index] if index < len(values) else ""
+        data_rows.append(item)
+    return headers, data_rows
+
+
+def read_xlsx_upload(raw):
+    try:
+        with zipfile.ZipFile(io.BytesIO(raw)) as workbook:
+            shared_strings = []
+            if "xl/sharedStrings.xml" in workbook.namelist():
+                shared_root = ET.fromstring(workbook.read("xl/sharedStrings.xml"))
+                for item in shared_root.findall("sheet:si", XLSX_NS):
+                    shared_strings.append("".join(node.text or "" for node in item.findall(".//sheet:t", XLSX_NS)))
+
+            sheet_names = sorted(
+                name for name in workbook.namelist()
+                if name.startswith("xl/worksheets/") and name.endswith(".xml")
+            )
+            if not sheet_names:
+                raise ValueError("Workbook không có sheet dữ liệu")
+            sheet_root = ET.fromstring(workbook.read(sheet_names[0]))
+    except zipfile.BadZipFile as error:
+        raise ValueError("File XLSX không hợp lệ") from error
+
+    rows = []
+    for row in sheet_root.findall(".//sheet:sheetData/sheet:row", XLSX_NS):
+        values = []
+        for cell in row.findall("sheet:c", XLSX_NS):
+            index = xlsx_column_index(cell.attrib.get("r", "A1"))
+            while len(values) <= index:
+                values.append("")
+            values[index] = read_xlsx_cell(cell, shared_strings)
+        rows.append(values)
+    return rows_to_dicts(rows)
+
+
 def read_csv_upload(file_storage):
     raw = file_storage.read()
     if not raw:
         raise ValueError("File CSV đang trống")
+    filename = clean_text(getattr(file_storage, "filename", "")).lower()
+    if filename.endswith(".xlsx") or raw.startswith(b"PK\x03\x04"):
+        return read_xlsx_upload(raw)
     try:
         text = raw.decode("utf-8-sig")
     except UnicodeDecodeError:
@@ -1109,14 +1232,21 @@ def read_csv_upload(file_storage):
     reader = csv.DictReader(io.StringIO(text), dialect=dialect)
     if not reader.fieldnames:
         raise ValueError("CSV cần có dòng header")
-    return reader.fieldnames, list(reader)
+    headers = [clean_text(header) for header in reader.fieldnames]
+    rows = [{clean_text(key): value for key, value in row.items() if key is not None} for row in reader]
+    return headers, rows
 
 
-def resolve_csv_mapping(headers, mapping):
-    return {
+def resolve_csv_mapping(headers, mapping, rows=None):
+    resolved = {
         key: pick_csv_column(headers, mapping.get(key), candidates)
         for key, candidates in CSV_COLUMN_CANDIDATES.items()
     }
+    date_order = clean_text(mapping.get("date_order"), "auto").lower()
+    if date_order not in VALID_DATE_ORDERS:
+        date_order = "auto"
+    resolved["date_order"] = infer_date_order(rows or [], resolved.get("date_column")) if date_order == "auto" else date_order
+    return resolved
 
 
 def normalize_csv_transaction_row(row, resolved_mapping):
@@ -1127,13 +1257,14 @@ def normalize_csv_transaction_row(row, resolved_mapping):
     note_col = resolved_mapping.get("note_column")
     type_col = resolved_mapping.get("type_column")
     category_col = resolved_mapping.get("category_column")
+    date_order = resolved_mapping.get("date_order", "dmy")
 
     if not date_col:
         raise ValueError("Không tìm thấy cột ngày. Hãy nhập tên cột ngày.")
     if not amount_col and not (debit_col or credit_col):
         raise ValueError("Không tìm thấy cột số tiền. Hãy nhập cột amount hoặc debit/credit.")
 
-    date_value = parse_import_date(row.get(date_col))
+    date_value = parse_import_date(row.get(date_col), date_order)
     note = clean_text(row.get(note_col), "Imported transaction") if note_col else "Imported transaction"
     if amount_col:
         raw_amount = parse_import_amount(row.get(amount_col))
@@ -1171,7 +1302,7 @@ def validate_csv_mapping(resolved_mapping):
 
 def preview_transactions_from_csv(file_storage, mapping, limit=8):
     headers, rows = read_csv_upload(file_storage)
-    resolved_mapping = resolve_csv_mapping(headers, mapping)
+    resolved_mapping = resolve_csv_mapping(headers, mapping, rows)
     preview_rows = []
     errors = []
     for row_number, row in enumerate(rows[:limit], start=2):
@@ -1194,7 +1325,7 @@ def preview_transactions_from_csv(file_storage, mapping, limit=8):
 
 def import_transactions_from_csv(file_storage, mapping):
     headers, rows = read_csv_upload(file_storage)
-    resolved_mapping = resolve_csv_mapping(headers, mapping)
+    resolved_mapping = resolve_csv_mapping(headers, mapping, rows)
     validate_csv_mapping(resolved_mapping)
 
     inserted = 0
@@ -2399,14 +2530,29 @@ def api_import_csv():
         "note_column": clean_text(request.form.get("note_column")),
         "type_column": clean_text(request.form.get("type_column")),
         "category_column": clean_text(request.form.get("category_column")),
+        "date_order": clean_text(request.form.get("date_order"), "auto"),
     }
     try:
         result = import_transactions_from_csv(uploaded_file, mapping)
-        return jsonify({"message": "Đã import CSV", **result})
+        return jsonify({"message": "Đã import file", **result})
     except ValueError as error:
         return jsonify({"error": str(error)}), 400
     except Exception as error:
         return jsonify({"error": f"Không thể import CSV: {error}"}), 500
+
+
+@app.route("/api/import/csv", methods=["DELETE"])
+def api_delete_imported_transactions():
+    params = []
+    ownership_condition = owned_record_condition(params)
+    conn = get_db_connection()
+    cursor = conn.execute(
+        f"DELETE FROM transactions WHERE source = 'import' AND {ownership_condition}",
+        params,
+    )
+    conn.commit()
+    conn.close()
+    return jsonify({"message": "Đã xóa dữ liệu import", "deleted": cursor.rowcount})
 
 
 @app.route("/api/import/csv/preview", methods=["POST"])
@@ -2422,6 +2568,7 @@ def api_import_csv_preview():
         "note_column": clean_text(request.form.get("note_column")),
         "type_column": clean_text(request.form.get("type_column")),
         "category_column": clean_text(request.form.get("category_column")),
+        "date_order": clean_text(request.form.get("date_order"), "auto"),
     }
     try:
         result = preview_transactions_from_csv(uploaded_file, mapping)
@@ -2804,7 +2951,7 @@ def api_export_csv():
         ])
 
     output.seek(0)
-    response = Response(output.getvalue(), mimetype="text/csv")
+    response = Response("\ufeff" + output.getvalue(), content_type="text/csv; charset=utf-8")
     response.headers["Content-Disposition"] = f"attachment; filename=bao-cao-tai-chinh-{month or 'tat-ca'}.csv"
     return response
 

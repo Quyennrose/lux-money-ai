@@ -73,15 +73,15 @@ Các nguồn dữ liệu:
 - `import`: giao dịch import từ CSV.
 - `real`: gồm `manual` và `import`, không gồm dữ liệu mẫu.
 
-## Import CSV
+## Import CSV / XLSX
 
 Vào tab **Giao dịch**:
 
-1. Chọn file `.csv` hoặc `.tsv`.
+1. Chọn file `.csv`, `.tsv` hoặc `.xlsx`.
 2. Bấm **Xem trước**.
-3. Kiểm tra mapping cột ngày/số tiền/ghi chú/loại/danh mục.
-4. Chỉnh dropdown nếu cần.
-5. Bấm **Import CSV**.
+3. Kiểm tra mapping cột ngày/số tiền/ghi chú/loại/danh mục và định dạng ngày.
+4. Chỉnh dropdown nếu cần, ví dụ chọn `MM/DD/YYYY` cho dữ liệu ngày kiểu Mỹ.
+5. Bấm **Import file**.
 
 App tự bỏ qua giao dịch trùng theo:
 
@@ -89,7 +89,11 @@ App tự bỏ qua giao dịch trùng theo:
 date + amount + type + note
 ```
 
-Tên cột phổ biến được tự nhận diện, ví dụ: `date`, `amount`, `note`, `type`, `category`, `debit`, `credit`, `description`, `memo`, `nội dung`.
+Tên cột phổ biến được tự nhận diện, ví dụ: `date`, `date / time`, `amount`, `debit/credit`, `note`, `type`, `income/expense`, `category`, `debit`, `credit`, `description`, `transaction description`, `memo`, `nội dung`.
+
+Khi preview/import, app tự suy luận thứ tự ngày theo toàn bộ file để tránh đảo `01/02/2018` thành `2018-02-01` với dữ liệu `MM/DD/YYYY`.
+
+Nút **Xóa dữ liệu import** trong khu import sẽ xóa các giao dịch `source = import`, giữ nguyên dữ liệu mẫu và giao dịch nhập tay.
 
 ## AI
 

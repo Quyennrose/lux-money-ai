@@ -123,6 +123,63 @@ def test_csv_preview_import_and_duplicate_skip(client):
     assert imported[0]["source"] == "import"
 
 
+def test_import_infers_mdy_dates_from_csv(client):
+    csv_data = (
+        "Date,Description,Amount,Transaction Type,Category\n"
+        "01/02/2018,pytest mdy first,10.00,debit,Test\n"
+        "01/13/2018,pytest mdy signal,20.00,debit,Test\n"
+    )
+    preview_response = client.post(
+        "/api/import/csv/preview",
+        headers=csrf_headers(client),
+        data={"file": (io.BytesIO(csv_data.encode("utf-8")), "transactions.csv")},
+        content_type="multipart/form-data",
+    )
+    assert preview_response.status_code == 200
+    preview = preview_response.get_json()
+    assert preview["suggestedMapping"]["date_order"] == "mdy"
+    assert preview["previewRows"][0]["transaction"]["date"] == "2018-01-02"
+
+
+def test_import_parses_excel_serial_dates():
+    assert finance_app.parse_import_date("43102") == "2018-01-02"
+
+
+def test_clear_imported_transactions_keeps_manual_and_sample(client):
+    csv_data = (
+        "date,amount,note,type,category\n"
+        "2026-04-22,123456,pytest clear import,expense,Khác\n"
+    )
+    import_response = client.post(
+        "/api/import/csv",
+        headers=csrf_headers(client),
+        data={"file": (io.BytesIO(csv_data.encode("utf-8")), "transactions.csv")},
+        content_type="multipart/form-data",
+    )
+    assert import_response.status_code == 200
+    assert import_response.get_json()["inserted"] == 1
+
+    manual_response = client.post(
+        "/api/transactions",
+        headers=csrf_headers(client),
+        json={
+            "date": "2026-04-23",
+            "note": "pytest clear manual",
+            "amount": 1000,
+            "type": "expense",
+            "category": "Khác",
+        },
+    )
+    assert manual_response.status_code == 200
+
+    clear_response = client.delete("/api/import/csv", headers=csrf_headers(client))
+    assert clear_response.status_code == 200
+    assert clear_response.get_json()["deleted"] == 1
+    assert client.get("/api/transactions?source=import&search=pytest clear").get_json() == []
+    assert len(client.get("/api/transactions?source=manual&search=pytest clear").get_json()) == 1
+    assert len(client.get("/api/transactions?source=sample").get_json()) > 0
+
+
 def test_recurring_rules_and_report_export(client):
     recurring_response = client.get("/api/recurring-transactions?source=sample")
     assert recurring_response.status_code == 200

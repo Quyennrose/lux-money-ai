@@ -1410,6 +1410,16 @@ button:hover,
     color: var(--text);
 }
 
+.danger-button {
+    border-color: rgba(239, 68, 68, 0.55);
+    color: #dc2626;
+}
+
+.danger-button:hover {
+    background: rgba(239, 68, 68, 0.12);
+    color: #b91c1c;
+}
+
 .form-actions {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));

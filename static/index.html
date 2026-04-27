@@ -246,13 +246,21 @@
         <section class="panel tab-panel" data-tab="transactions">
             <div class="section-header">
                 <div>
-                    <h2>Import CSV giao dịch</h2>
-                    <p class="section-subtitle">Upload CSV ngân hàng hoặc file tự xuất. Bỏ trống mapping nếu file dùng tên cột phổ biến như date, amount, note.</p>
+                    <h2>Import giao dịch</h2>
+                    <p class="section-subtitle">Upload CSV, TSV hoặc XLSX ngân hàng/file tự xuất. Bỏ trống mapping nếu file dùng tên cột phổ biến như date, amount, note.</p>
                 </div>
             </div>
             <form id="csv-import-form" class="form-grid import-grid">
-                <label>File CSV
-                    <input type="file" id="csv-file" accept=".csv,.tsv,text/csv,text/tab-separated-values" required />
+                <label>File CSV/TSV/XLSX
+                    <input type="file" id="csv-file" accept=".csv,.tsv,.xlsx,text/csv,text/tab-separated-values,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required />
+                </label>
+                <label>Định dạng ngày
+                    <select id="csv-date-order">
+                        <option value="auto">Tự nhận diện</option>
+                        <option value="dmy">DD/MM/YYYY</option>
+                        <option value="mdy">MM/DD/YYYY</option>
+                        <option value="ymd">YYYY-MM-DD</option>
+                    </select>
                 </label>
                 <label>Cột ngày
                     <select id="csv-date-column" data-placeholder="Tự nhận diện"></select>
@@ -276,7 +284,8 @@
                     <select id="csv-category-column" data-placeholder="Tự phân loại"></select>
                 </label>
                 <button type="button" id="csv-preview-submit" class="secondary-button">Xem trước</button>
-                <button type="submit" id="csv-import-submit">Import CSV</button>
+                <button type="submit" id="csv-import-submit">Import file</button>
+                <button type="button" id="csv-clear-import" class="secondary-button danger-button">Xóa dữ liệu import</button>
             </form>
             <div id="csv-preview" class="csv-preview empty-state">Chọn file rồi bấm “Xem trước” để kiểm tra mapping trước khi import.</div>
             <div id="csv-import-result" class="import-result empty-state">Chưa import file nào.</div>
