@@ -1,6 +1,43 @@
-# LUX Money AI
+# Lux Money AI – Financial Behavior Prediction Project
 
-Personal finance dashboard chạy local bằng Flask + SQLite + HTML/CSS/JavaScript. App có dữ liệu mẫu 12 tháng để demo ngay, đồng thời hỗ trợ nhập giao dịch thật bằng tay hoặc import CSV.
+Lux Money AI is a personal finance analytics dashboard built to analyze spending behavior, saving patterns, and predicted financial outcomes from structured transaction data. The project runs locally with Flask, SQLite, and a browser-based dashboard, with sample 12-month data for quick portfolio demonstration and support for real transactions through manual input or CSV import.
+
+## Objectives
+
+- Analyze personal spending behavior across income, expenses, categories, and monthly cash flow.
+- Explore relationships between income share, expense categories, and saving rate.
+- Compare predicted vs actual saving rate through dashboard metrics and AI-assisted insights.
+- Apply predictive analytics techniques for financial behavior prediction and decision support.
+
+## Tools Used
+
+- Python
+- Flask
+- SQLite
+- HTML/CSS/JavaScript
+- Data visualization
+- Predictive analytics techniques
+- OpenAI API integration with local analytical fallback
+
+## Dataset
+
+The dataset contains structured financial behavior records including:
+
+- expense category
+- income share
+- saving rate
+- needs vs wants classification
+- predicted saving rate
+- transaction date, amount, type, note, and data source
+
+The app includes a 12-month sample dataset for demo and analysis. Users can also add real financial records manually or import transaction files, while keeping sample, manual, and imported data separated by source.
+
+## Key Insights
+
+- Essential expenses dominate total spending behavior.
+- Saving rate prediction aligns with observed financial patterns.
+- Income share significantly influences saving capability.
+- Monthly cash flow and category-level spending trends help identify budget pressure points.
 
 ## Tính Năng Chính
 
