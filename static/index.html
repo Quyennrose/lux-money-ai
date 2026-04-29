@@ -301,10 +301,10 @@
                 </label>
                 <button type="button" id="csv-preview-submit" class="secondary-button">Xem trước</button>
                 <button type="submit" id="csv-import-submit">Nhập file</button>
-                <button type="button" id="csv-clear-import" class="secondary-button danger-button">Xóa dữ liệu import</button>
+                <button type="button" id="csv-clear-import" class="secondary-button danger-button">Xóa dữ liệu đã nhập</button>
             </form>
-            <div id="csv-preview" class="csv-preview empty-state">Chọn file rồi bấm “Xem trước” để kiểm tra mapping trước khi import.</div>
-            <div id="csv-import-result" class="import-result empty-state">Chưa import file nào.</div>
+            <div id="csv-preview" class="csv-preview empty-state">Chọn file rồi bấm “Xem trước” để kiểm tra ánh xạ trước khi nhập.</div>
+            <div id="csv-import-result" class="import-result empty-state">Chưa nhập file nào.</div>
         </section>
 
         <section class="panel tab-panel active" data-tab="overview">
@@ -481,8 +481,8 @@
                 <p id="ai-health-status" class="status-text">Đang kiểm tra chế độ AI...</p>
                 <div id="ai-insight-result" class="ai-insight-result">
                     <div class="empty-state compact-empty">
-                        <strong>Chưa tạo AI Spending Insight.</strong>
-                        <p>Bấm “Tạo phân tích AI” để xem brief theo tháng đang chọn, gồm tổng quan, mẫu chi tiêu và hành động nên làm.</p>
+                        <strong>Chưa tạo phân tích chi tiêu bằng AI.</strong>
+                        <p>Bấm “Tạo phân tích AI” để xem tóm tắt theo tháng đang chọn, gồm tổng quan, mẫu chi tiêu và hành động nên làm.</p>
                     </div>
                 </div>
             </div>
@@ -556,10 +556,10 @@
                     <h3>Sao lưu / Khôi phục</h3>
                     <p class="section-subtitle">Sao lưu tải file `finance.db`. Khôi phục sẽ thay DB hiện tại và ứng dụng tự tạo bản `.bak` trước khi ghi đè. Trên web công khai, phần này chỉ dành cho quản trị viên.</p>
                     <div class="form-actions">
-                        <button type="button" id="backup-db">Tải backup DB</button>
+                        <button type="button" id="backup-db">Tải bản sao lưu DB</button>
                     </div>
                     <form id="restore-form" class="form-grid compact-form">
-                        <label>File backup SQLite
+                        <label>File sao lưu SQLite
                             <input type="file" id="restore-file" accept=".db,.sqlite,.sqlite3,application/octet-stream" />
                         </label>
                         <button type="submit" class="danger-fill">Khôi phục DB</button>

@@ -244,9 +244,9 @@ const LANGUAGE_TEXT = {
     "Tự phân loại": "Auto categorize",
     "Xem trước": "Preview",
     "Nhập file": "Import file",
-    "Xóa dữ liệu import": "Clear imported data",
-    "Chọn file rồi bấm “Xem trước” để kiểm tra mapping trước khi import.": "Choose a file and click Preview to check column mapping before import.",
-    "Chưa import file nào.": "No file imported yet.",
+    "Xóa dữ liệu đã nhập": "Clear imported data",
+    "Chọn file rồi bấm “Xem trước” để kiểm tra ánh xạ trước khi nhập.": "Choose a file and click Preview to check column mapping before import.",
+    "Chưa nhập file nào.": "No file imported yet.",
     "Xu hướng theo tháng": "Monthly Trends",
     "Phân tích 12 tháng": "12-Month Analytics",
     "Nhìn nhanh dòng tiền, tỷ lệ tiết kiệm và tháng có chi tiêu cao nhất.": "Quickly review cash flow, saving rate, and the highest-spending month.",
@@ -294,8 +294,8 @@ const LANGUAGE_TEXT = {
     "Báo cáo 12 tháng": "12-month report",
     "Sẵn sàng phân tích dữ liệu giao dịch.": "Ready to analyze transaction data.",
     "Đang kiểm tra chế độ AI...": "Checking AI mode...",
-    "Chưa tạo AI Spending Insight.": "No AI Spending Insight generated yet.",
-    "Bấm “Tạo phân tích AI” để xem brief theo tháng đang chọn, gồm tổng quan, mẫu chi tiêu và hành động nên làm.": "Click Generate AI insight to view a brief for the selected month, including summary, spending patterns, and recommended actions.",
+    "Chưa tạo phân tích chi tiêu bằng AI.": "No AI Spending Insight generated yet.",
+    "Bấm “Tạo phân tích AI” để xem tóm tắt theo tháng đang chọn, gồm tổng quan, mẫu chi tiêu và hành động nên làm.": "Click Generate AI insight to view a brief for the selected month, including summary, spending patterns, and recommended actions.",
     "Trợ lý LUX AI": "Lux AI Assistant",
     "Hỏi tự do về chi tiêu, ngân sách, so sánh tháng và kế hoạch tiết kiệm. AI sẽ dùng dữ liệu giao dịch hiện có.": "Ask freely about spending, budgets, month comparisons, and saving plans. AI uses the available transaction data.",
     "Phạm vi": "Scope",
@@ -318,8 +318,8 @@ const LANGUAGE_TEXT = {
     "Đăng xuất": "Log out",
     "Sao lưu / Khôi phục": "Backup / Restore",
     "Sao lưu tải file `finance.db`. Khôi phục sẽ thay DB hiện tại và ứng dụng tự tạo bản `.bak` trước khi ghi đè. Trên web công khai, phần này chỉ dành cho quản trị viên.": "Backup downloads the `finance.db` file. Restore replaces the current database and creates a `.bak` file before overwriting. On public deployments, this is admin-only.",
-    "Tải backup DB": "Download DB backup",
-    "File backup SQLite": "SQLite backup file",
+    "Tải bản sao lưu DB": "Download DB backup",
+    "File sao lưu SQLite": "SQLite backup file",
     "Khôi phục DB": "Restore DB",
     "Chưa có thao tác dữ liệu.": "No data action yet.",
     "Ứng dụng có manifest và service worker để chạy giống ứng dụng đã cài trên máy hỗ trợ PWA.": "The app has a manifest and service worker so supported browsers can run it like an installed app.",
@@ -478,15 +478,6 @@ function initLanguage() {
     languageViBtn?.addEventListener("click", () => setLanguage("vi"));
     languageEnBtn?.addEventListener("click", () => setLanguage("en"));
     applyLanguage();
-    languageObserver = new MutationObserver((mutations) => {
-        if (currentLanguage !== "en") {
-            return;
-        }
-        mutations.forEach((mutation) => {
-            mutation.addedNodes.forEach((node) => applyLanguage(node));
-        });
-    });
-    languageObserver.observe(document.body, { childList: true, subtree: true });
 }
 
 function escapeHtml(value) {
@@ -803,7 +794,7 @@ async function downloadBackupDatabase() {
     const response = await fetch("/api/backup/db");
     if (!response.ok) {
         const data = await response.json().catch(() => ({}));
-        throw new Error(data.error || "Không thể tải backup DB.");
+        throw new Error(data.error || t("Không thể tải bản sao lưu DB.", "Could not download DB backup."));
     }
     const blob = await response.blob();
     const disposition = response.headers.get("Content-Disposition") || "";
@@ -876,7 +867,7 @@ function renderCsvPreview(data) {
     const rows = data.previewRows || [];
     const errors = data.errors || [];
     if (!rows.length && !errors.length) {
-        csvPreview.innerHTML = `<div class="empty-state">File có ${data.totalRows || 0} dòng nhưng chưa đọc được dòng preview hợp lệ.</div>`;
+        csvPreview.innerHTML = `<div class="empty-state">${t(`File có ${data.totalRows || 0} dòng nhưng chưa đọc được dòng xem trước hợp lệ.`, `The file has ${data.totalRows || 0} rows, but no valid preview rows could be read.`)}</div>`;
         return;
     }
 
@@ -886,7 +877,7 @@ function renderCsvPreview(data) {
             <tr>
                 <td>${item.row}</td>
                 <td>${escapeHtml(formatDate(tx.date))}</td>
-                <td>${escapeHtml(tx.type === "income" ? "Thu" : "Chi")}</td>
+                <td>${escapeHtml(tx.type === "income" ? t("Thu", "Income") : t("Chi", "Expense"))}</td>
                 <td>${escapeHtml(displayCategory(tx.category))}</td>
                 <td>${escapeHtml(displayNote(tx.note))}</td>
                 <td>${formatCurrency(tx.amount)}</td>
@@ -895,7 +886,7 @@ function renderCsvPreview(data) {
     }).join("");
     const errorHtml = errors.length ? `
         <div class="csv-preview-errors">
-            ${errors.map((item) => `<p>Dòng ${item.row}: ${escapeHtml(item.error)}</p>`).join("")}
+            ${errors.map((item) => `<p>${t("Dòng", "Row")} ${item.row}: ${escapeHtml(item.error)}</p>`).join("")}
         </div>
     ` : "";
 
@@ -1567,7 +1558,7 @@ async function refreshAuthStatus() {
             restoreSubmitBtn.disabled = !canManageDb;
         }
         if (!canManageDb && dataStatus) {
-            dataStatus.textContent = t("Backup/restore DB chỉ dành cho admin. Thiết lập ADMIN_EMAILS rồi đăng nhập bằng email admin để dùng.", "DB backup/restore is admin-only. Set ADMIN_EMAILS and sign in with an admin email to use it.");
+            dataStatus.textContent = t("Sao lưu/khôi phục DB chỉ dành cho quản trị viên. Thiết lập ADMIN_EMAILS rồi đăng nhập bằng email quản trị để dùng.", "DB backup/restore is admin-only. Set ADMIN_EMAILS and sign in with an admin email to use it.");
         } else if (dataStatus && dataStatus.textContent.includes("chỉ dành cho admin")) {
             dataStatus.textContent = t("Sẵn sàng thao tác dữ liệu.", "Ready for data actions.");
         }
@@ -2156,19 +2147,19 @@ authLogoutBtn.addEventListener("click", async () => {
 });
 
 backupDbBtn.addEventListener("click", async () => {
-    dataStatus.textContent = t("Đang chuẩn bị backup DB...", "Preparing DB backup...");
+    dataStatus.textContent = t("Đang chuẩn bị bản sao lưu DB...", "Preparing DB backup...");
     try {
         await downloadBackupDatabase();
-        dataStatus.textContent = t("Đã tải backup DB.", "DB backup downloaded.");
+        dataStatus.textContent = t("Đã tải bản sao lưu DB.", "DB backup downloaded.");
     } catch (error) {
-        dataStatus.textContent = error.message || t("Không thể tải backup DB.", "Could not download DB backup.");
+        dataStatus.textContent = error.message || t("Không thể tải bản sao lưu DB.", "Could not download DB backup.");
     }
 });
 
 restoreForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (!restoreFile.files.length) {
-        dataStatus.textContent = t("Vui lòng chọn file backup SQLite.", "Please choose a SQLite backup file.");
+        dataStatus.textContent = t("Vui lòng chọn file sao lưu SQLite.", "Please choose a SQLite backup file.");
         return;
     }
     if (!confirm(t("Restore sẽ thay database hiện tại. App sẽ tạo bản .bak trước khi ghi đè. Tiếp tục?", "Restore will replace the current database. The app will create a .bak file before overwriting. Continue?"))) {
@@ -2204,9 +2195,9 @@ csvFile.addEventListener("change", () => {
     populateCsvMappingOptions([]);
     csvPreview.className = "csv-preview empty-state";
     csvPreview.textContent = csvFile.files.length
-        ? t("Bấm “Xem trước” để app đọc header và gợi ý mapping cột.", "Click Preview so the app can read headers and suggest column mapping.")
-        : t("Chọn file rồi bấm “Xem trước” để kiểm tra mapping trước khi import.", "Choose a file and click Preview to check mapping before import.");
-    csvImportResult.textContent = t("Chưa import file nào.", "No file imported yet.");
+        ? t("Bấm “Xem trước” để ứng dụng đọc tiêu đề cột và gợi ý ánh xạ.", "Click Preview so the app can read headers and suggest column mapping.")
+        : t("Chọn file rồi bấm “Xem trước” để kiểm tra ánh xạ trước khi nhập.", "Choose a file and click Preview to check mapping before import.");
+    csvImportResult.textContent = t("Chưa nhập file nào.", "No file imported yet.");
 });
 
 csvPreviewSubmit.addEventListener("click", async () => {
@@ -2223,7 +2214,7 @@ csvPreviewSubmit.addEventListener("click", async () => {
         renderCsvPreview(result);
     } catch (error) {
         csvPreview.className = "csv-preview empty-state";
-        csvPreview.textContent = error.message || t("Không thể preview file.", "Could not preview file.");
+        csvPreview.textContent = error.message || t("Không thể xem trước file.", "Could not preview file.");
     } finally {
         csvPreviewSubmit.disabled = false;
         csvPreviewSubmit.textContent = t("Xem trước", "Preview");
