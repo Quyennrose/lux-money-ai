@@ -1450,8 +1450,10 @@ button:hover,
     display: grid;
     grid-template-columns: repeat(2, minmax(84px, 1fr));
     gap: 8px;
-    justify-content: flex-end;
-    min-width: 176px;
+    grid-column: 1 / -1;
+    justify-self: end;
+    width: min(100%, 220px);
+    min-width: 0;
 }
 
 .transaction-actions button {
@@ -1471,23 +1473,12 @@ button:hover,
 }
 
 .delete-button {
-    width: auto;
     background: var(--danger);
     border-radius: 10px;
 }
 
 .delete-button:hover {
     background: var(--danger-hover);
-}
-
-@media (max-width: 1200px) {
-    .transaction-item {
-        grid-template-columns: 1fr;
-    }
-
-    .transaction-actions {
-        min-width: 0;
-    }
 }
 
 .ai-insight-panel {
