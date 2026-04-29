@@ -2,8 +2,8 @@ const { test, expect } = require("@playwright/test");
 
 test("dashboard shell loads and core navigation is visible", async ({ page }) => {
   await page.goto("/");
-  await expect(page).toHaveTitle(/LUX Money AI/);
-  await expect(page.getByText("LUX Money AI").first()).toBeVisible();
+  await expect(page).toHaveTitle(/Lux Money AI/);
+  await expect(page.getByText("Lux Money AI").first()).toBeVisible();
   await expect(page.getByText("Tổng quan").first()).toBeVisible();
   await expect(page.getByText("Giao dịch").first()).toBeVisible();
   await expect(page.getByText("AI").first()).toBeVisible();

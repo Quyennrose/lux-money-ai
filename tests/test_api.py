@@ -281,7 +281,7 @@ def test_backup_endpoint_and_static_pwa_files(client, monkeypatch):
     assert manifest.status_code == 200
     assert service_worker.status_code == 200
     assert icon.status_code == 200
-    assert "LUX Money AI" in manifest.get_data(as_text=True)
+    assert "Lux Money AI" in manifest.get_data(as_text=True)
 
 
 def test_csrf_required_for_state_changing_requests(client):

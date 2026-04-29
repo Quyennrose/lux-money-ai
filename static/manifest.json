@@ -1,6 +1,6 @@
 {
-  "name": "LUX Money AI",
-  "short_name": "LUX Money",
+  "name": "Lux Money AI",
+  "short_name": "Lux Money",
   "description": "Personal finance dashboard with AI insights, CSV import, budgets and analytics.",
   "start_url": "/",
   "scope": "/",

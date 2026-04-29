@@ -3023,7 +3023,7 @@ def render_finance_report_html(month, source):
   <section class="hero">
     <p>{esc(source_label)} · tạo lúc {esc(utc_now().strftime("%Y-%m-%d %H:%M UTC"))}</p>
     <h1>Báo cáo tài chính {esc(title_month)}</h1>
-    <p>Tổng hợp dòng tiền, ngân sách, danh mục chi tiêu và khoản định kỳ từ LUX Money AI.</p>
+    <p>Tổng hợp dòng tiền, ngân sách, danh mục chi tiêu và khoản định kỳ từ Lux Money AI.</p>
     <div class="grid">
       <div class="card"><span>Thu nhập</span><strong>{format_report_money(summary['income'])}</strong></div>
       <div class="card"><span>Chi tiêu</span><strong>{format_report_money(summary['expense'])}</strong></div>

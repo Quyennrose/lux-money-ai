@@ -1,4 +1,4 @@
-# Lux Money AI – Financial Behavior Prediction Project
+# Lux Money AI - Financial Behavior Prediction Project
 
 Lux Money AI is a personal finance analytics dashboard built to analyze spending behavior, saving patterns, and predicted financial outcomes from structured transaction data. The project runs locally with Flask, SQLite, and a browser-based dashboard, with sample 12-month data for quick portfolio demonstration and support for real transactions through manual input or CSV import.
 
