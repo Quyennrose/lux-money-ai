@@ -1,4 +1,4 @@
-const CACHE_NAME = "lux-money-ai-v2";
+const CACHE_NAME = "lux-money-ai-v3";
 const STATIC_ASSETS = [
   "/",
   "/index.html",
