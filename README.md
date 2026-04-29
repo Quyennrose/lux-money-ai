@@ -9,6 +9,13 @@ Lux Money AI is a personal finance analytics dashboard built to analyze spending
 - Compare predicted vs actual saving rate through dashboard metrics and AI-assisted insights.
 - Apply predictive analytics techniques for financial behavior prediction and decision support.
 
+## Project Workflow
+
+1. Data loading and preprocessing from sample, manual, and imported transaction records.
+2. Financial behavior feature analysis across income, expenses, categories, budgets, goals, and recurring patterns.
+3. Saving rate and cash-flow prediction using recent transaction history and rule-based forecasting logic.
+4. Visualization and interpretation of results through dashboard metrics, charts, heatmaps, AI summaries, and exportable reports.
+
 ## Tools Used
 
 - Python
@@ -21,16 +28,43 @@ Lux Money AI is a personal finance analytics dashboard built to analyze spending
 
 ## Dataset
 
-The dataset contains structured financial behavior records including:
+The dataset contains structured financial behavior records and derived indicators including:
 
 - expense category
-- income share
-- saving rate
-- needs vs wants classification
-- predicted saving rate
+- income and expense amounts
+- saving rate and net cash flow
+- budget usage and goal progress
+- recurring transaction indicators
+- forecasted 30-day income, expense, and recommended savings
 - transaction date, amount, type, note, and data source
 
 The app includes a 12-month sample dataset for demo and analysis. Users can also add real financial records manually or import transaction files, while keeping sample, manual, and imported data separated by source.
+
+## Dataset Source
+
+The included portfolio dataset is a simulated 12-month personal finance dataset prepared for exploratory data analysis, dashboard demonstration, and prediction-modeling workflow presentation.
+
+The application also supports user-provided real transaction data through manual entry and CSV/XLSX import. Imported and manually entered records are labeled separately from sample data so analysis can distinguish demo data from real financial records.
+
+## Modeling Approach
+
+The project applies data-driven analytical techniques to explore relationships between income, expense structure, category behavior, budget adherence, and saving rate outcomes.
+
+Current forecasting uses recent transaction history to estimate next-30-day income, expenses, recommended savings, risk level, and financial health indicators. The logic is implemented as interpretable statistical/rule-based predictive analytics rather than a black-box machine learning model, making each recommendation easy to inspect and explain.
+
+AI-assisted summaries use OpenAI when configured and a local analytical fallback when no API key is available. Both paths use the same transaction context and follow the selected dashboard language.
+
+## Visualization Preview
+
+![Prediction Result](images/prediction_result.png)
+
+## Key Contributions
+
+- Built an end-to-end financial behavior analytics workflow.
+- Explored relationships between income, spending categories, budgets, and saving rate.
+- Implemented interpretable forecasting for cash flow, saving behavior, and risk signals.
+- Generated visual insights through charts, heatmaps, dashboard metrics, and bilingual reports.
+- Added bilingual English/Vietnamese support across UI, local AI fallback, and exported reports.
 
 ## Key Insights
 
