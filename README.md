@@ -39,30 +39,25 @@ The app includes a 12-month sample dataset for demo and analysis. Users can also
 - Income share significantly influences saving capability.
 - Monthly cash flow and category-level spending trends help identify budget pressure points.
 
-## Tính Năng Chính
+## Core Features
 
-- Dashboard theo tháng: tổng thu, tổng chi, dòng tiền ròng, savings rate, top category, giao dịch lớn nhất.
-- Transaction CRUD: thêm, sửa, xóa, lọc theo tháng/loại/danh mục/tìm kiếm/sắp xếp.
-- Bộ lọc nguồn dữ liệu: `Tất cả`, `Dữ liệu mẫu`, `Dữ liệu thật`, `Nhập tay`, `Import CSV`.
-- CSV Import Wizard: preview file, tự nhận diện header, chọn mapping bằng dropdown, chống trùng giao dịch.
-- Budget: tạo/sửa/xóa ngân sách theo tháng, tự tính đã dùng từ giao dịch thật trong cùng danh mục.
-- Savings goals: tạo mục tiêu tiết kiệm và theo dõi tiến độ.
-- Analytics 12 tháng: cash flow, savings rate, heatmap chi tiêu theo ngày, xu hướng top danh mục.
-- Recurring/subscription: tự phát hiện khoản định kỳ, cho xác nhận hoặc bỏ qua.
-- AI assistant:
-  - AI insight theo tháng.
-  - Chat hỏi đáp theo dữ liệu giao dịch.
-  - Report tháng hoặc 12 tháng.
-  - Có fallback local nếu chưa cấu hình OpenAI.
-- Export:
-  - CSV giao dịch.
-  - HTML finance report để mở/lưu/in ra PDF bằng trình duyệt.
-- Backup/restore SQLite database.
-- Tài khoản local nhẹ: đăng ký/đăng nhập để dữ liệu mới có thể gắn với user.
-- CSRF token cho các request ghi dữ liệu và rate-limit cơ bản cho đăng nhập.
-- PWA manifest/service worker để trình duyệt hỗ trợ có thể cài như app.
+- Monthly dashboard with income, expenses, net cash flow, saving rate, top category, and largest transaction.
+- Transaction CRUD with filters for month, type, category, search term, source, and sorting.
+- Data source filters for all data, sample data, real data, manual entries, and CSV imports.
+- CSV/XLSX import wizard with preview, automatic header detection, dropdown column mapping, and duplicate protection.
+- Budget management by month and category, with automatic spending progress from real transactions.
+- Savings goals with progress tracking.
+- 12-month analytics for cash flow, saving rate, daily spending heatmap, and top category trends.
+- Recurring and subscription detection with confirm or ignore actions.
+- AI assistant for monthly insights, transaction-based Q&A, and monthly or 12-month reports.
+- Local analytical fallback when OpenAI is not configured.
+- CSV transaction export and HTML finance report export.
+- SQLite backup and restore.
+- Lightweight local account system for user-linked data.
+- CSRF protection for write requests and basic login rate limiting.
+- PWA manifest and service worker so supported browsers can install the app.
 
-## Cài Đặt
+## Installation
 
 ```powershell
 python -m venv venv
@@ -70,131 +65,132 @@ python -m venv venv
 pip install -r requirements.txt
 ```
 
-Tạo file `.env` từ mẫu:
+Create a local environment file from the example:
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-Nếu muốn dùng OpenAI thật, mở `.env` và điền:
+To use the OpenAI integration, open `.env` and set:
 
 ```text
 OPENAI_API_KEY=sk-your-key
-SECRET_KEY=mot-chuoi-bi-mat-dai
+SECRET_KEY=a-long-random-secret
 ```
 
-Không có key thì app vẫn chạy; AI sẽ dùng fallback local dựa trên dữ liệu hiện có.
+The app still works without an API key. In that case, AI features use a local analytical fallback based on the available transaction data.
 
-## Chạy App
+## Run Locally
 
 ```powershell
 python app.py
 ```
 
-Mở:
+Open:
 
 ```text
 http://127.0.0.1:5000
 ```
 
-File SQLite mặc định là `finance.db` ở thư mục gốc. Khi chạy app, schema sẽ tự migrate các cột cần thiết như `date`, `note`, `source`.
+The default SQLite file is `finance.db` in the project root. When the app starts, it automatically migrates required schema columns such as `date`, `note`, and `source`.
 
-## Dữ Liệu Mẫu
+## Sample Data
 
-App có nút **Nạp dữ liệu mẫu 12 tháng** trong dashboard. Dữ liệu mẫu được đánh dấu `source = sample`, nên có thể lọc riêng khỏi dữ liệu nhập tay/import.
+The dashboard includes an action to load 12 months of sample data. Sample records are marked with `source = sample`, so they can be filtered separately from manually entered or imported transactions.
 
-Các nguồn dữ liệu:
+Data sources:
 
-- `sample`: dữ liệu mẫu để demo.
-- `manual`: giao dịch bạn nhập tay.
-- `import`: giao dịch import từ CSV.
-- `real`: gồm `manual` và `import`, không gồm dữ liệu mẫu.
+- `sample`: demo data for portfolio presentation and testing.
+- `manual`: transactions entered manually by the user.
+- `import`: transactions imported from CSV/XLSX files.
+- `real`: manual and imported transactions, excluding sample data.
 
-## Import CSV / XLSX
+## CSV / XLSX Import
 
-Vào tab **Giao dịch**:
+In the Transactions tab:
 
-1. Chọn file `.csv`, `.tsv` hoặc `.xlsx`.
-2. Bấm **Xem trước**.
-3. Kiểm tra mapping cột ngày/số tiền/ghi chú/loại/danh mục và định dạng ngày.
-4. Chỉnh dropdown nếu cần, ví dụ chọn `MM/DD/YYYY` cho dữ liệu ngày kiểu Mỹ.
-5. Bấm **Import file**.
+1. Select a `.csv`, `.tsv`, or `.xlsx` file.
+2. Preview the file.
+3. Review the mapped date, amount, note, type, category, and date format columns.
+4. Adjust the dropdown mapping if needed, for example selecting `MM/DD/YYYY` for US-style dates.
+5. Import the file.
 
-App tự bỏ qua giao dịch trùng theo:
+The app skips duplicate transactions using:
 
 ```text
 date + amount + type + note
 ```
 
-Tên cột phổ biến được tự nhận diện, ví dụ: `date`, `date / time`, `amount`, `debit/credit`, `note`, `type`, `income/expense`, `category`, `debit`, `credit`, `description`, `transaction description`, `memo`, `nội dung`.
+Common column names are detected automatically, including `date`, `date / time`, `amount`, `debit/credit`, `note`, `type`, `income/expense`, `category`, `debit`, `credit`, `description`, `transaction description`, and `memo`.
 
-Khi preview/import, app tự suy luận thứ tự ngày theo toàn bộ file để tránh đảo `01/02/2018` thành `2018-02-01` với dữ liệu `MM/DD/YYYY`.
+During preview and import, the app infers date ordering across the whole file to reduce ambiguous parsing issues such as reading `01/02/2018` incorrectly.
 
-Nút **Xóa dữ liệu import** trong khu import sẽ xóa các giao dịch `source = import`, giữ nguyên dữ liệu mẫu và giao dịch nhập tay.
+Imported data can be cleared separately by removing records with `source = import`, while sample and manual data remain available.
 
 ## AI
 
-AI dùng backend route, không hardcode key ở frontend.
+AI requests are handled through backend routes. API keys are never hardcoded in frontend code.
 
 - Model: `gpt-4.1-mini`
-- Env var: `OPENAI_API_KEY`
-- Nếu thiếu key hoặc OpenAI lỗi, app trả về fallback local thay vì crash.
-- Nếu chưa điền `OPENAI_API_KEY`, AI vẫn trả lời bằng phân tích local từ giao dịch. Muốn dùng OpenAI thật thì thêm key vào `.env`, lưu file rồi restart `python app.py`.
+- Environment variable: `OPENAI_API_KEY`
+- If the API key is missing or OpenAI returns an error, the app uses a local fallback instead of crashing.
+- To enable OpenAI responses, add `OPENAI_API_KEY` to `.env`, save the file, and restart `python app.py`.
 
-Ví dụ câu hỏi:
+Example questions:
 
-- `Tháng này tôi chi nhiều nhất ở đâu?`
+- `Where did I spend the most this month?`
 - `Compare this month to last month`
-- `Tôi có vượt ngân sách không?`
-- `Gợi ý ngân sách tháng sau`
-- `12 tháng gần đây tài chính của tôi thế nào?`
+- `Am I over budget?`
+- `Suggest a budget for next month`
+- `How has my financial behavior changed over the last 12 months?`
 
-## Export Report
+## Export Reports
 
-Trong tab **Giao dịch**:
+In the Transactions tab:
 
-- **Xuất báo cáo CSV**: tải file CSV theo filter tháng/nguồn dữ liệu.
-- **Xuất report HTML**: tải báo cáo HTML gồm summary, insight, top categories, recurring và giao dịch gần đây.
+- CSV export downloads transactions based on the selected month and data source filters.
+- HTML report export generates a finance report with summary metrics, insights, top categories, recurring items, and recent transactions.
 
-Có thể mở file HTML trong trình duyệt rồi dùng `Ctrl+P` để in hoặc lưu PDF.
+The HTML report can be opened in a browser and printed or saved as PDF with `Ctrl+P`.
 
-## Tài Khoản Local
+## Local Accounts
 
-Tab **Dữ liệu** có phần **Tài khoản local**:
+The Data tab includes a lightweight local account system:
 
-- Không đăng nhập: app vẫn chạy như trước để demo/local.
-- Đăng ký/đăng nhập: giao dịch mới, CSV import, budget/goal mới sẽ được gắn với `user_id`.
-- App có CSRF token cho request ghi dữ liệu, session cookie `HttpOnly/SameSite=Lax`, và rate-limit cơ bản cho login.
-- Backup/restore DB chỉ dành cho admin. Thiết lập `ADMIN_EMAILS=email-cua-ban@example.com`, đăng ký/đăng nhập đúng email đó rồi mới dùng được.
-- Trên public deploy, nên để `ENABLE_DEMO_DATA=false` để user lạ không nạp lại dữ liệu mẫu, và chỉ bật `ENABLE_DB_RESTORE=true` tạm thời khi admin cần restore file backup tin cậy.
-- Đây vẫn là lớp auth local đơn giản để chuẩn bị multi-user; nếu public production, nên chạy qua HTTPS, cấu hình `SESSION_COOKIE_SECURE=true`, dùng DB production và audit phân quyền kỹ hơn.
+- Without login, the app still works for local demo usage.
+- After registration/login, new transactions, CSV imports, budgets, and goals are linked to `user_id`.
+- Write requests use CSRF tokens, sessions use `HttpOnly/SameSite=Lax` cookies, and login has basic rate limiting.
+- Database backup and restore are admin-only. Set `ADMIN_EMAILS=your-email@example.com`, register or log in with that email, then use the admin actions.
+- For public deployment, set `ENABLE_DEMO_DATA=false` so unknown users cannot reload sample data.
+- Keep `ENABLE_DB_RESTORE=false` on public deployments except when an admin intentionally needs to restore a trusted backup.
+- This is a simple local auth layer for portfolio and demo use. For production, run behind HTTPS, set `SESSION_COOKIE_SECURE=true`, use a production database, and audit authorization carefully.
 
 ## Backup / Restore
 
-Trong tab **Dữ liệu**:
+In the Data tab:
 
-- **Tải backup DB**: tải file `finance.db`.
-- **Restore DB**: upload file SQLite backup để thay DB hiện tại.
+- Database backup downloads the current `finance.db` file.
+- Database restore uploads a trusted SQLite backup and replaces the current database.
 
-Trước khi restore, app tự tạo bản backup dạng:
+Before restore, the app automatically creates a backup named:
 
 ```text
 finance.db.before-restore-YYYYMMDD-HHMMSS.bak
 ```
 
-Restore sẽ thay dữ liệu hiện tại, nên chỉ dùng với file backup bạn tin tưởng.
+Restore replaces the current data, so it should only be used with trusted backup files.
 
 ## PWA
 
-App có `manifest.json`, `icon.svg`, và `sw.js`. Trình duyệt hỗ trợ PWA có thể hiển thị tùy chọn **Install app**. API vẫn cần Flask server chạy local/deploy; service worker chỉ cache shell tĩnh.
+The app includes `manifest.json`, `icon.svg`, and `sw.js`. Supported browsers can show an Install App option. The Flask server is still required for API routes; the service worker only caches the static app shell.
 
-## Deploy Render/Railway
+## Deploy to Render or Railway
 
-Đã có:
+The repo includes:
 
 - `Procfile`
 - `render.yaml`
-- `gunicorn` trong `requirements.txt`
+- `gunicorn` in `requirements.txt`
 
 Start command:
 
@@ -202,10 +198,10 @@ Start command:
 gunicorn app:app
 ```
 
-Biến môi trường nên cấu hình:
+Recommended environment variables:
 
 ```text
-SECRET_KEY=chuoi-random-dai
+SECRET_KEY=a-long-random-secret
 OPENAI_API_KEY=sk-your-key
 SESSION_COOKIE_SECURE=true
 DB_PATH=/data/finance.db
@@ -215,26 +211,26 @@ ENABLE_DB_RESTORE=false
 MAX_UPLOAD_MB=5
 ```
 
-Lưu ý quan trọng: nếu deploy với SQLite, cần persistent disk. `render.yaml` hiện mount disk vào `/data` và đặt `DB_PATH=/data/finance.db`; nếu deploy ở nền tảng khác, hãy cấu hình biến `DB_PATH` trỏ tới thư mục có lưu trữ bền vững.
+Important note: if deploying with SQLite, use persistent storage. The included `render.yaml` mounts a disk at `/data` and sets `DB_PATH=/data/finance.db`. On another platform, configure `DB_PATH` to point to a persistent directory.
 
-## PostgreSQL / Production DB
+## PostgreSQL / Production Database
 
-Code hiện dùng SQLite trực tiếp để giữ app local đơn giản và dễ demo. Nếu muốn lên PostgreSQL thật, cần migration riêng:
+The current app uses SQLite directly to keep local setup simple and demo-friendly. A real PostgreSQL migration would require:
 
-- tạo schema PostgreSQL tương đương các bảng `transactions`, `budgets`, `goals`, `users`, `recurring_rules`;
-- thay lớp `sqlite3` bằng driver như `psycopg`;
-- đổi placeholder SQL từ `?` sang `%s` hoặc dùng query builder/ORM;
-- chuyển backup/restore DB sang cơ chế dump/restore của PostgreSQL.
+- creating equivalent PostgreSQL schemas for `transactions`, `budgets`, `goals`, `users`, and `recurring_rules`;
+- replacing `sqlite3` with a driver such as `psycopg`;
+- changing SQL placeholders from `?` to `%s` or using a query builder/ORM;
+- replacing SQLite file backup/restore with PostgreSQL dump/restore workflows.
 
-Không nên đổi nửa vời trong app hiện tại vì sẽ dễ phá dữ liệu SQLite local.
+A partial database migration is not recommended because it can easily break the current local SQLite workflow.
 
-## Chạy Test
+## Run Tests
 
 ```powershell
 .\venv\Scripts\python.exe -m pytest -q
 ```
 
-Test dùng SQLite DB tạm trong thư mục temp, không dùng và không xóa `finance.db` hiện tại.
+Tests use a temporary SQLite database and do not modify or delete the local `finance.db`.
 
 ## Smoke Check / Health Check
 
@@ -244,21 +240,21 @@ Health endpoint:
 GET /api/health
 ```
 
-Endpoint này kiểm tra nhanh SQLite DB, `PRAGMA integrity_check`, số lượng bản ghi trong các bảng chính, trạng thái OpenAI, PWA assets, session, CSRF và cookie.
+This endpoint checks SQLite connectivity, `PRAGMA integrity_check`, table record counts, OpenAI configuration status, PWA assets, session behavior, CSRF, and cookie settings.
 
-Chạy smoke check local không cần browser:
+Run the local smoke check without a browser:
 
 ```powershell
 .\venv\Scripts\python.exe scripts\smoke_check.py
 ```
 
-Script này dùng Flask test client trong process, chỉ đọc dữ liệu và không sửa `finance.db`.
+The script uses Flask's test client in-process. It only reads data and does not modify `finance.db`.
 
-## E2E Browser Test Tùy Chọn
+## Optional E2E Browser Test
 
-Repo có sẵn cấu hình Playwright ở `package.json`, `playwright.config.js`, và `tests/e2e`.
+The repo includes Playwright configuration in `package.json`, `playwright.config.js`, and `tests/e2e`.
 
-Cần cài Node.js trước, sau đó:
+Install Node.js first, then run:
 
 ```powershell
 npm install
@@ -266,36 +262,36 @@ npx playwright install chromium
 python app.py
 ```
 
-Ở terminal khác:
+In another terminal:
 
 ```powershell
 npm run e2e
 ```
 
-Nếu máy chưa có `node` trong PATH, bỏ qua phần này; pytest và smoke check backend vẫn chạy được.
+If `node` is not available in PATH, this step can be skipped. Pytest and the backend smoke check still work without Node.js.
 
 ## QA / Demo Checklist
 
-Dùng checklist này trước khi demo hoặc bàn giao:
+Use this checklist before a demo or handoff:
 
-- Chạy app bằng `python app.py` và mở `http://127.0.0.1:5000`.
-- Nếu dashboard trống, bấm **Nạp dữ liệu mẫu 12 tháng**.
-- Trong **Tổng quan**, đổi tháng và kiểm tra summary card, monthly chart, category chart, heatmap.
-- Trong **Giao dịch**, thử filter theo `Dữ liệu mẫu`, `Dữ liệu thật`, `Nhập tay`, `Import CSV`.
-- Thêm một giao dịch nhỏ, sửa giao dịch đó, rồi xóa giao dịch đó.
-- Import một file CSV nhỏ, bấm **Xem trước**, kiểm tra mapping, rồi import.
-- Trong **Ngân sách**, sửa một budget và kiểm tra progress tự đổi theo giao dịch cùng danh mục.
-- Trong **Định kỳ**, xác nhận một khoản recurring rồi bỏ qua lại để kiểm tra trạng thái.
-- Trong **AI**, hỏi: `Tháng này tôi chi nhiều nhất ở đâu?`
-- Xuất **CSV** và **report HTML** theo tháng đang xem.
-- Vào **Dữ liệu**, đăng ký tài khoản local, đăng xuất, đăng nhập lại.
-- Bấm **Tải backup DB** để kiểm tra tải file backup.
-- Kiểm tra restore DB bằng bản backup test nếu cần; không restore nhầm file thật khi đang demo.
-- Chạy `.\venv\Scripts\python.exe -m pytest -q` và đảm bảo tất cả test pass.
+- Run the app with `python app.py` and open `http://127.0.0.1:5000`.
+- If the dashboard is empty, load the 12-month sample dataset.
+- In Overview, switch months and verify summary cards, monthly chart, category chart, and heatmap.
+- In Transactions, test filters for sample data, real data, manual entries, and imported data.
+- Add a small transaction, edit it, then delete it.
+- Import a small CSV file, preview it, verify column mapping, then import it.
+- In Budgets, edit a budget and verify that progress updates from transactions in the same category.
+- In Recurring, confirm one recurring item and ignore another to verify status behavior.
+- In AI, ask: `Where did I spend the most this month?`
+- Export CSV and HTML reports for the selected month.
+- In Data, register a local account, log out, and log back in.
+- Download a database backup.
+- Test restore only with a trusted test backup file.
+- Run `.\venv\Scripts\python.exe -m pytest -q` and confirm all tests pass.
 
 ## Troubleshooting
 
-- Nếu `node --check static/app.js` lỗi `node is not recognized`: máy chưa cài Node.js hoặc chưa có trong PATH. App vẫn chạy vì frontend là JavaScript thuần trên trình duyệt.
-- Nếu AI trả lời bằng fallback: kiểm tra `.env` có `OPENAI_API_KEY` chưa và đã cài `openai` chưa.
-- Nếu import CSV lỗi ngày: dùng định dạng `YYYY-MM-DD`, `DD/MM/YYYY`, `DD-MM-YYYY`, hoặc chọn đúng cột ngày trong preview.
-- Nếu dashboard trống: bấm **Nạp dữ liệu mẫu 12 tháng** hoặc import/thêm giao dịch mới.
+- If `node --check static/app.js` returns `node is not recognized`, Node.js is not installed or is not in PATH. The app still works because the frontend is plain browser JavaScript.
+- If AI returns fallback responses, check that `.env` contains `OPENAI_API_KEY` and that the `openai` package is installed.
+- If CSV date import fails, use `YYYY-MM-DD`, `DD/MM/YYYY`, or `DD-MM-YYYY`, or select the correct date column in preview.
+- If the dashboard is empty, load sample data or import/add new transactions.
