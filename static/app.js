@@ -71,6 +71,8 @@ const csvMappingInputs = {
 };
 const themeLightBtn = document.getElementById("theme-light");
 const themeDarkBtn = document.getElementById("theme-dark");
+const languageViBtn = document.getElementById("language-vi");
+const languageEnBtn = document.getElementById("language-en");
 const vipInsightsList = document.getElementById("vip-insights-list");
 const vipInsightText = document.getElementById("vip-insight-text");
 const vipRunwayValue = document.getElementById("vip-runway-value");
@@ -137,6 +139,268 @@ let editingTransactionId = null;
 let editingBudgetId = null;
 let chatHistory = [];
 let csrfToken = null;
+let currentLanguage = localStorage.getItem("lux-money-language") || "vi";
+let languageObserver = null;
+const originalTextNodes = new WeakMap();
+
+const LANGUAGE_TEXT = {
+    "Ngôn ngữ": "Language",
+    "Tiếng Việt": "Vietnamese",
+    "Chọn giao diện": "Theme",
+    "Sáng": "Light",
+    "Tối": "Dark",
+    "Money intelligence dashboard": "Money intelligence dashboard",
+    "Theo dõi dòng tiền, ngân sách và thói quen chi tiêu theo từng tháng với AI phân tích thực tế.": "Track cash flow, budgets, and monthly spending behavior with practical AI analysis.",
+    "Tổng quan": "Overview",
+    "Giao dịch": "Transactions",
+    "Ngân sách": "Budgets",
+    "Định kỳ": "Recurring",
+    "Mục tiêu": "Goals",
+    "Dữ liệu": "Data",
+    "Tổng quan theo tháng": "Monthly Overview",
+    "Chọn tháng để dashboard, ngân sách, giao dịch và AI insight chỉ tính trên đúng kỳ đó.": "Choose a month so dashboard metrics, budgets, transactions, and AI insights use the same period.",
+    "Tháng đang xem": "Selected month",
+    "Thêm giao dịch": "Add Transaction",
+    "Mô tả": "Description",
+    "Ví dụ: Mua đồ siêu thị": "Example: Grocery shopping",
+    "Số tiền": "Amount",
+    "Ngày giao dịch": "Transaction date",
+    "Loại": "Type",
+    "Chi tiêu": "Expense",
+    "Thu nhập": "Income",
+    "Danh mục": "Category",
+    "Tự động (dựa trên mô tả)": "Automatic (based on description)",
+    "Ăn uống": "Food",
+    "Đi lại": "Transport",
+    "Giải trí": "Entertainment",
+    "Hóa đơn": "Bills",
+    "Mua sắm": "Shopping",
+    "Tiết kiệm": "Savings",
+    "Đầu tư": "Investment",
+    "Khác": "Other",
+    "Lưu giao dịch": "Save transaction",
+    "Hủy chỉnh sửa": "Cancel edit",
+    "Ngân sách tháng": "Monthly Budget",
+    "Số tiền ngân sách": "Budget amount",
+    "Tháng": "Month",
+    "Lưu ngân sách": "Save budget",
+    "Mục tiêu tiết kiệm": "Savings Goals",
+    "Tên mục tiêu": "Goal name",
+    "Ví dụ: Du lịch": "Example: Travel",
+    "Số tiền cần đạt": "Target amount",
+    "Tiền đã tiết kiệm": "Saved amount",
+    "Hạn chót": "Deadline",
+    "Lưu mục tiêu": "Save goal",
+    "Tóm tắt dòng tiền": "Cash Flow Summary",
+    "Các chỉ số chính của tháng đang xem, trình bày gọn để quét nhanh trên desktop.": "Key metrics for the selected month, optimized for quick desktop scanning.",
+    "Số dư": "Balance",
+    "Trung bình": "Medium",
+    "Ngân sách tuân thủ": "Budget adherence",
+    "Tỷ lệ tiết kiệm": "Saving rate",
+    "Top danh mục": "Top category",
+    "Chi lớn nhất": "Largest expense",
+    "Transaction Command Center": "Transaction Command Center",
+    "Lọc, tìm kiếm, sắp xếp và rà soát giao dịch theo tháng.": "Filter, search, sort, and review transactions by month.",
+    "Xuất báo cáo CSV": "Export CSV",
+    "Xuất report HTML": "Export HTML report",
+    "Nguồn dữ liệu": "Data source",
+    "Tất cả": "All",
+    "Dữ liệu mẫu": "Sample data",
+    "Dữ liệu thật": "Real data",
+    "Nhập tay": "Manual entry",
+    "Import CSV": "CSV import",
+    "Ví dụ: Ăn uống": "Example: Food",
+    "Tìm kiếm": "Search",
+    "Tìm theo ghi chú...": "Search by note...",
+    "Sắp xếp": "Sort",
+    "Mới nhất": "Newest",
+    "Cũ nhất": "Oldest",
+    "Số tiền cao nhất": "Highest amount",
+    "Số tiền thấp nhất": "Lowest amount",
+    "Import giao dịch": "Import Transactions",
+    "Upload CSV, TSV hoặc XLSX ngân hàng/file tự xuất. Bỏ trống mapping nếu file dùng tên cột phổ biến như date, amount, note.": "Upload a bank CSV, TSV, XLSX, or exported file. Leave mapping blank if the file uses common column names such as date, amount, or note.",
+    "File CSV/TSV/XLSX": "CSV/TSV/XLSX file",
+    "Định dạng ngày": "Date format",
+    "Tự nhận diện": "Auto detect",
+    "Cột ngày": "Date column",
+    "Cột số tiền": "Amount column",
+    "Cột debit": "Debit column",
+    "Cột credit": "Credit column",
+    "Cột ghi chú": "Note column",
+    "Cột loại": "Type column",
+    "Cột danh mục": "Category column",
+    "Không dùng": "Not used",
+    "Tự phân loại": "Auto categorize",
+    "Xem trước": "Preview",
+    "Import file": "Import file",
+    "Xóa dữ liệu import": "Clear imported data",
+    "Chọn file rồi bấm “Xem trước” để kiểm tra mapping trước khi import.": "Choose a file and click Preview to check column mapping before import.",
+    "Chưa import file nào.": "No file imported yet.",
+    "Xu hướng theo tháng": "Monthly Trends",
+    "Analytics 12 tháng": "12-Month Analytics",
+    "Nhìn nhanh dòng tiền, tỷ lệ tiết kiệm và tháng có chi tiêu cao nhất.": "Quickly review cash flow, saving rate, and the highest-spending month.",
+    "So với trung bình 12 tháng": "Compared with 12-month average",
+    "Heatmap chi tiêu tháng": "Monthly spending heatmap",
+    "Xu hướng top danh mục": "Top category trend",
+    "Phân tích tài chính": "Financial Analysis",
+    "Xu hướng:": "Trend:",
+    "Đang tải...": "Loading...",
+    "Thu nhập dự báo 30 ngày:": "30-day forecast income:",
+    "Chi tiêu dự báo 30 ngày:": "30-day forecast expenses:",
+    "Tiết kiệm đề xuất:": "Suggested savings:",
+    "LUX AI VIP Insights": "Lux AI VIP Insights",
+    "Bản phân tích executive cho tháng hiện tại: rủi ro, cơ hội và hành động ưu tiên.": "Executive analysis for the current month: risks, opportunities, and priority actions.",
+    "Nạp dữ liệu mẫu 12 tháng": "Load 12-month sample data",
+    "Tổng quan VIP": "VIP Overview",
+    "Tải dữ liệu để hiển thị gợi ý VIP.": "Load data to show VIP suggestions.",
+    "Ưu tiên hành động": "Priority actions",
+    "Hỏi LUX AI ngay trên dashboard": "Ask Lux AI from the dashboard",
+    "Ví dụ: “Tháng này tôi chi nhiều nhất ở đâu?” hoặc “Làm sao tiết kiệm hơn tháng sau?”": "Example: “Where did I spend the most this month?” or “How can I save more next month?”",
+    "Nhập câu hỏi bất kỳ về dữ liệu tài chính...": "Ask any question about your financial data...",
+    "Hỏi AI": "Ask AI",
+    "AI sẽ trả lời dựa trên giao dịch thật trong app.": "AI will answer based on transactions in the app.",
+    "Chiến lược tài chính cá nhân": "Personal Financial Strategy",
+    "Phong cách tài chính": "Financial style",
+    "Giới hạn chi tiêu": "Spending limit",
+    "Tiết kiệm mục tiêu": "Target savings",
+    "Mục tiêu ưu tiên": "Priority goal",
+    "Bản đồ tài chính": "Financial blueprint",
+    "Các bước thông minh sẽ hiện ra sau khi bạn nhập dữ liệu.": "Smart next steps will appear after you enter data.",
+    "Kế hoạch tối ưu": "Optimization Plan",
+    "Phân bổ theo danh mục": "Category Breakdown",
+    "Tiến trình ngân sách": "Budget Progress",
+    "Gợi ý ngân sách tháng sau": "Next Month Budget Suggestions",
+    "Dựa trên chi tiêu gần đây để đề xuất mức ngân sách thực tế hơn.": "Based on recent spending to suggest more realistic budget targets.",
+    "Danh sách ngân sách": "Budget List",
+    "Khoản định kỳ": "Recurring Items",
+    "Tự phát hiện các khoản lặp lại như thuê nhà, hóa đơn, subscription hoặc đầu tư định kỳ từ giao dịch hiện có.": "Automatically detects recurring items such as rent, bills, subscriptions, or scheduled investments from existing transactions.",
+    "Hỏi AI Tài Chính": "Ask Financial AI",
+    "Phân tích giao dịch bằng OpenAI và đề xuất hành động tiếp theo.": "Analyze transactions with OpenAI and suggest next actions.",
+    "Tạo phân tích AI": "Generate AI insight",
+    "Report tháng": "Monthly report",
+    "Report 12 tháng": "12-month report",
+    "Sẵn sàng phân tích dữ liệu giao dịch.": "Ready to analyze transaction data.",
+    "Đang kiểm tra chế độ AI...": "Checking AI mode...",
+    "Chưa tạo AI Spending Insight.": "No AI Spending Insight generated yet.",
+    "Bấm “Tạo phân tích AI” để xem brief theo tháng đang chọn, gồm tổng quan, mẫu chi tiêu và hành động nên làm.": "Click Generate AI insight to view a brief for the selected month, including summary, spending patterns, and recommended actions.",
+    "LUX AI Assistant": "Lux AI Assistant",
+    "Hỏi tự do về chi tiêu, ngân sách, so sánh tháng và kế hoạch tiết kiệm. AI sẽ dùng dữ liệu giao dịch hiện có.": "Ask freely about spending, budgets, month comparisons, and saving plans. AI uses the available transaction data.",
+    "Phạm vi": "Scope",
+    "Tháng đang xem": "Selected month",
+    "12 tháng gần nhất": "Last 12 months",
+    "Hỏi AI về tài chính của bạn...": "Ask AI about your finances...",
+    "Gửi": "Send",
+    "Xóa hội thoại": "Clear chat",
+    "Giao dịch theo tháng": "Monthly Transactions",
+    "Dữ liệu, tài khoản & cài đặt app": "Data, Account & App Settings",
+    "Backup/restore SQLite, đăng nhập local và cài app như PWA. Dữ liệu mẫu hiện tại không bị xóa trừ khi bạn restore DB khác.": "Backup/restore SQLite, local login, and install the app as a PWA. Current sample data is not deleted unless you restore another database.",
+    "Tài khoản local": "Local account",
+    "Đang kiểm tra trạng thái...": "Checking status...",
+    "Tên hiển thị": "Display name",
+    "Tên của bạn": "Your name",
+    "Mật khẩu": "Password",
+    "Tối thiểu 6 ký tự": "At least 6 characters",
+    "Đăng nhập": "Log in",
+    "Tạo tài khoản": "Create account",
+    "Đăng xuất": "Log out",
+    "Backup tải file `finance.db`. Restore sẽ thay DB hiện tại và app tự tạo bản `.bak` trước khi ghi đè. Trên web public, phần này chỉ dành cho admin.": "Backup downloads the `finance.db` file. Restore replaces the current database and creates a `.bak` file before overwriting. On public deployments, this is admin-only.",
+    "Tải backup DB": "Download DB backup",
+    "File backup SQLite": "SQLite backup file",
+    "Restore DB": "Restore DB",
+    "Chưa có thao tác dữ liệu.": "No data action yet.",
+    "App có manifest và service worker để chạy giống app cài đặt trên máy hỗ trợ PWA.": "The app has a manifest and service worker so supported browsers can run it like an installed app.",
+    "Đang kiểm tra PWA...": "Checking PWA...",
+    "Sửa lỗi phiên": "Session fix",
+    "Dùng khi trình duyệt báo CSRF token không hợp lệ sau khi server restart, login/logout hoặc PWA cache bản cũ.": "Use this when the browser reports an invalid CSRF token after server restart, login/logout, or an old PWA cache.",
+    "Làm mới phiên": "Refresh session",
+    "Sẵn sàng.": "Ready.",
+    "Chỉnh sửa giao dịch": "Edit transaction",
+    "Cập nhật ngày, danh mục, số tiền và ghi chú.": "Update date, category, amount, and note.",
+    "Ghi chú": "Note",
+    "Ngày": "Date",
+    "Lưu thay đổi": "Save changes",
+    "Hủy": "Cancel",
+    "Đang phân tích...": "Analyzing...",
+    "Đang tải...": "Loading...",
+    "Xin chào! Tôi là AI tài chính của bạn. Hãy hỏi tôi về tiết kiệm, chi tiêu, đầu tư, ngân sách hoặc mục tiêu nhé! 💰": "Hello! I am your financial AI. Ask me about savings, spending, investing, budgets, or goals."
+};
+
+function translationFor(value) {
+    const text = String(value ?? "");
+    const trimmed = text.trim();
+    if (!trimmed) {
+        return text;
+    }
+    const translated = LANGUAGE_TEXT[trimmed];
+    if (!translated) {
+        return text;
+    }
+    return text.replace(trimmed, translated);
+}
+
+function translateText(value) {
+    return currentLanguage === "en" ? translationFor(value) : value;
+}
+
+function setElementLanguageText(node) {
+    if (node.nodeType === Node.TEXT_NODE) {
+        if (!originalTextNodes.has(node)) {
+            originalTextNodes.set(node, node.nodeValue);
+        }
+        const original = originalTextNodes.get(node);
+        node.nodeValue = currentLanguage === "en" ? translationFor(original) : original;
+        return;
+    }
+    if (node.nodeType !== Node.ELEMENT_NODE) {
+        return;
+    }
+    ["placeholder", "data-placeholder", "title", "aria-label"].forEach((attr) => {
+        if (!node.hasAttribute(attr)) {
+            return;
+        }
+        const key = `i18nOriginal${attr.replace(/[^a-z]/gi, "")}`;
+        if (!node.dataset[key]) {
+            node.dataset[key] = node.getAttribute(attr);
+        }
+        const original = node.dataset[key];
+        node.setAttribute(attr, currentLanguage === "en" ? translationFor(original) : original);
+    });
+}
+
+function applyLanguage(root = document.body) {
+    document.documentElement.lang = currentLanguage;
+    document.title = currentLanguage === "en"
+        ? "Lux Money AI - Personal Finance Dashboard"
+        : "Lux Money AI - Bảng điều khiển tài chính cá nhân";
+    setElementLanguageText(root);
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
+    while (walker.nextNode()) {
+        setElementLanguageText(walker.currentNode);
+    }
+    languageViBtn?.classList.toggle("active", currentLanguage === "vi");
+    languageEnBtn?.classList.toggle("active", currentLanguage === "en");
+}
+
+function setLanguage(language) {
+    currentLanguage = language;
+    localStorage.setItem("lux-money-language", language);
+    applyLanguage();
+}
+
+function initLanguage() {
+    languageViBtn?.addEventListener("click", () => setLanguage("vi"));
+    languageEnBtn?.addEventListener("click", () => setLanguage("en"));
+    applyLanguage();
+    languageObserver = new MutationObserver((mutations) => {
+        if (currentLanguage !== "en") {
+            return;
+        }
+        mutations.forEach((mutation) => {
+            mutation.addedNodes.forEach((node) => applyLanguage(node));
+        });
+    });
+    languageObserver.observe(document.body, { childList: true, subtree: true });
+}
 
 function escapeHtml(value) {
     return String(value ?? "")
@@ -1975,6 +2239,7 @@ chatInput.addEventListener("keypress", (e) => {
 });
 
 // Add welcome message
+initLanguage();
 addChatMessage("Xin chào! Tôi là AI tài chính của bạn. Hãy hỏi tôi về tiết kiệm, chi tiêu, đầu tư, ngân sách hoặc mục tiêu nhé! 💰");
 
 populateCsvMappingOptions([]);

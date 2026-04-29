@@ -9,6 +9,15 @@ test("dashboard shell loads and core navigation is visible", async ({ page }) =>
   await expect(page.getByText("AI").first()).toBeVisible();
 });
 
+test("language switcher toggles Vietnamese and English labels", async ({ page }) => {
+  await page.goto("/");
+  await page.locator("#language-en").click();
+  await expect(page.getByRole("button", { name: "Overview" })).toBeVisible();
+  await expect(page.getByText("Monthly Overview")).toBeVisible();
+  await page.locator("#language-vi").click();
+  await expect(page.getByRole("button", { name: "Tổng quan" })).toBeVisible();
+});
+
 test("AI assistant accepts a question", async ({ page }) => {
   await page.goto("/");
   await page.locator('.tab-button[data-tab="ai"]').click();

@@ -42,6 +42,7 @@ The app includes a 12-month sample dataset for demo and analysis. Users can also
 ## Core Features
 
 - Monthly dashboard with income, expenses, net cash flow, saving rate, top category, and largest transaction.
+- Bilingual interface switcher for English and Vietnamese.
 - Transaction CRUD with filters for month, type, category, search term, source, and sorting.
 - Data source filters for all data, sample data, real data, manual entries, and CSV imports.
 - CSV/XLSX import wizard with preview, automatic header detection, dropdown column mapping, and duplicate protection.
