@@ -1439,6 +1439,7 @@ button:hover,
         minmax(84px, 0.65fr)
         minmax(132px, 0.9fr)
         minmax(176px, auto);
+    gap: 12px;
     background: var(--card-bg);
     border: 1px solid var(--surface-border);
     border-radius: 14px;
@@ -1477,6 +1478,16 @@ button:hover,
 
 .delete-button:hover {
     background: var(--danger-hover);
+}
+
+@media (max-width: 1200px) {
+    .transaction-item {
+        grid-template-columns: 1fr;
+    }
+
+    .transaction-actions {
+        min-width: 0;
+    }
 }
 
 .ai-insight-panel {
