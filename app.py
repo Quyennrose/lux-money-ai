@@ -1991,7 +1991,7 @@ def generate_advice(income: float, expense: float, forecast: dict, budget_progre
     return advice
 
 
-def build_local_ai_insight(transactions, month=None):
+def build_local_ai_insight(transactions, month=None, language: str = "vi"):
     expense_totals = {}
     income = 0.0
     expense = 0.0
@@ -2011,18 +2011,32 @@ def build_local_ai_insight(transactions, month=None):
     savings_rate = round((balance / income) * 100, 1) if income > 0 else 0.0
     suggestions = []
     if expense > income and income > 0:
-        suggestions.append("Chi tiêu đang vượt thu nhập. Hãy giảm các khoản không thiết yếu trong kỳ tới.")
+        suggestions.append("Spending is above income. Reduce non-essential expenses in the next period." if language == "en" else "Chi tiêu đang vượt thu nhập. Hãy giảm các khoản không thiết yếu trong kỳ tới.")
     elif income > 0:
-        suggestions.append(f"Tỷ lệ tiết kiệm hiện là {savings_rate}%. Nếu muốn tăng nhanh, đặt trần tuần cho danh mục chi lớn nhất.")
+        suggestions.append(f"Current saving rate is {savings_rate}%. To improve faster, set a weekly cap for the largest category." if language == "en" else f"Tỷ lệ tiết kiệm hiện là {savings_rate}%. Nếu muốn tăng nhanh, đặt trần tuần cho danh mục chi lớn nhất.")
     if top_categories:
         top_category, top_amount = top_categories[0]
         top_share = round((top_amount / expense) * 100, 1) if expense else 0.0
-        suggestions.append(f"Rà soát {top_category}: đang chiếm {top_share}% tổng chi. Đây là điểm cắt giảm ưu tiên.")
+        suggestions.append(f"Review {label_en(top_category, CATEGORY_LABELS_EN)}: it accounts for {top_share}% of total spending. This is the first place to reduce." if language == "en" else f"Rà soát {top_category}: đang chiếm {top_share}% tổng chi. Đây là điểm cắt giảm ưu tiên.")
     if biggest_expense:
         note = biggest_expense["note"] or biggest_expense["category"]
-        suggestions.append(f"Kiểm tra giao dịch lớn nhất: {note} ({float(biggest_expense['amount']):,.0f} VND) để xem có thể giảm hoặc tách ngân sách không.")
+        suggestions.append(f"Review the largest transaction: {label_en(note, NOTE_LABELS_EN)} ({float(biggest_expense['amount']):,.0f} VND) to see whether it can be reduced or budgeted separately." if language == "en" else f"Kiểm tra giao dịch lớn nhất: {note} ({float(biggest_expense['amount']):,.0f} VND) để xem có thể giảm hoặc tách ngân sách không.")
     if not suggestions:
-        suggestions.append("Thêm thêm giao dịch để nhận gợi ý chi tiết hơn.")
+        suggestions.append("Add more transactions to receive more detailed suggestions." if language == "en" else "Thêm thêm giao dịch để nhận gợi ý chi tiết hơn.")
+
+    if language == "en":
+        return {
+            "spending_insights": [
+                f"Analysis period: {month or 'available data'} with {len(transactions)} transactions.",
+                f"Income {income:,.0f} VND, expenses {expense:,.0f} VND, net cash flow {balance:,.0f} VND.",
+                f"Saving rate: {savings_rate}%.",
+            ],
+            "patterns": [
+                f"{label_en(category, CATEGORY_LABELS_EN)}: {amount:,.0f} VND ({round((amount / expense) * 100, 1) if expense else 0}%)"
+                for category, amount in top_categories
+            ] or ["Not enough data to detect spending patterns."],
+            "suggestions": suggestions,
+        }
 
     return {
         "spending_insights": [
@@ -2038,8 +2052,14 @@ def build_local_ai_insight(transactions, month=None):
     }
 
 
-def generate_openai_insight(transactions, month=None):
+def generate_openai_insight(transactions, month=None, language: str = "vi"):
     if not transactions:
+        if language == "en":
+            return {
+                "spending_insights": ["No transactions available for analysis."],
+                "patterns": [],
+                "suggestions": ["Add income and expense records so AI has data to analyze."],
+            }
         return {
             "spending_insights": ["Chưa có giao dịch để phân tích."],
             "patterns": [],
@@ -2061,8 +2081,9 @@ def generate_openai_insight(transactions, month=None):
         }
         for tx in transactions[:120]
     ]
+    output_language = "English" if language == "en" else "Vietnamese"
     prompt = {
-        "task": "Analyze personal finance transactions and return concise Vietnamese JSON.",
+        "task": f"Analyze personal finance transactions and return concise {output_language} JSON.",
         "month": month,
         "schema": {
             "spending_insights": ["string"],
@@ -2079,7 +2100,7 @@ def generate_openai_insight(transactions, month=None):
                 "role": "system",
                 "content": (
                     "You are a personal finance assistant. Return only valid JSON with keys "
-                    "spending_insights, patterns, and suggestions. Each value must be an array of short Vietnamese strings. "
+                    f"spending_insights, patterns, and suggestions. Each value must be an array of short {output_language} strings. "
                     "Be specific: mention totals, top category, biggest expense if visible, and 2 practical next actions. "
                     "Do not give generic advice that ignores the transaction data."
                 ),
@@ -2122,6 +2143,49 @@ def normalize_ai_text(value: str):
 
 def vnd(value):
     return f"{float(value or 0):,.0f} VND"
+
+
+CATEGORY_LABELS_EN = {
+    "Ăn uống": "Food",
+    "Đi lại": "Transport",
+    "Giải trí": "Entertainment",
+    "Hóa đơn": "Bills",
+    "Mua sắm": "Shopping",
+    "Tiết kiệm": "Savings",
+    "Đầu tư": "Investment",
+    "Khác": "Other",
+    "Nhà ở": "Housing",
+    "Sức khỏe": "Health",
+    "Du lịch": "Travel",
+    "Học tập": "Education",
+    "Lương": "Salary",
+}
+
+NOTE_LABELS_EN = {
+    "Cafe và ăn trưa": "Coffee and lunch",
+    "Du lịch ngắn ngày": "Short trip",
+    "Grab và gửi xe đi làm": "Grab and work parking",
+    "Khám sức khỏe định kỳ": "Routine health check",
+    "Khóa học và sách": "Courses and books",
+    "Lương tháng": "Monthly salary",
+    "Mua thực phẩm siêu thị": "Supermarket groceries",
+    "Mua đồ cá nhân": "Personal shopping",
+    "Netflix và xem phim": "Netflix and movies",
+    "Thưởng dự án": "Project bonus",
+    "Tiền thuê nhà": "Rent payment",
+    "Ăn ngoài cuối tuần": "Weekend dining out",
+    "Điện nước và internet": "Utilities and internet",
+    "Đầu tư ETF định kỳ": "Recurring ETF investment",
+}
+
+
+def label_en(value: str | None, mapping: dict[str, str]):
+    text = value or ""
+    return mapping.get(text, text)
+
+
+def normalize_language(value: str | None):
+    return "en" if clean_text(value).lower().startswith("en") else "vi"
 
 
 def has_any(text: str, keywords: list[str]):
@@ -2168,7 +2232,159 @@ def find_category_in_question(question_normalized: str, category_summary: list):
     return None
 
 
-def generate_local_ai_answer(question: str, context: dict):
+def generate_local_ai_answer_en(question: str, context: dict):
+    dashboard = context["dashboard"]
+    question_lc = normalize_ai_text(question)
+    top_category = dashboard.get("topSpendingCategory")
+    biggest_expense = dashboard.get("biggestExpense")
+    comparison = dashboard.get("comparison", {})
+    month = dashboard["month"]
+    transactions = context.get("recent_transactions", [])
+    expenses = [tx for tx in transactions if tx["type"] == "expense"]
+    category_summary = context.get("category_summary", [])
+    budget_progress = context.get("budget_progress", [])
+    savings_rate = dashboard.get("savingsRate", 0)
+    net_cash_flow = dashboard.get("netCashFlow", 0)
+    monthly_summary = context.get("monthly_summary", [])
+    budget_suggestions = context.get("budget_suggestions", [])
+    scope = context.get("scope", "month")
+
+    if scope == "year" or has_any(question_lc, ["12 months", "year", "6 months", "3 months", "long term"]):
+        if monthly_summary:
+            total_income = sum(item["total_income"] for item in monthly_summary)
+            total_expense = sum(item["total_expense"] for item in monthly_summary)
+            best_month = max(monthly_summary, key=lambda item: item["total_income"] - item["total_expense"])
+            worst_month = max(monthly_summary, key=lambda item: item["total_expense"])
+            avg_expense = total_expense / max(len(monthly_summary), 1)
+            return (
+                f"Over the last {len(monthly_summary)} months: total income {vnd(total_income)}, "
+                f"total expenses {vnd(total_expense)}, average monthly expense {vnd(avg_expense)}. "
+                f"Highest spending month: {worst_month['month']} ({vnd(worst_month['total_expense'])}); "
+                f"best cash-flow month: {best_month['month']}."
+            )
+
+    if has_any(question_lc, ["hello", "who are you", "hey there"]):
+        return (
+            f"I am the in-app finance assistant. For {month}, I see income {vnd(dashboard['totalIncome'])}, "
+            f"expenses {vnd(dashboard['totalExpense'])}, and net cash flow {vnd(net_cash_flow)}. "
+            "You can ask about top spending, budgets, month comparison, or saving plans."
+        )
+
+    if not transactions:
+        return f"Month {month} has no transactions yet. Add income/expense records or load the 12-month sample data."
+
+    asked_category = find_category_in_question(question_lc, category_summary)
+    if asked_category:
+        matched = [tx for tx in expenses if tx["category"] == asked_category]
+        total = sum(float(tx["amount"]) for tx in matched)
+        top_items = sorted(matched, key=lambda tx: float(tx["amount"]), reverse=True)[:3]
+        details = "; ".join(f"{label_en(tx['note'], NOTE_LABELS_EN)}: {vnd(tx['amount'])}" for tx in top_items) or "no expense transactions"
+        return f"In {month}, {label_en(asked_category, CATEGORY_LABELS_EN)} totals {vnd(total)} across {len(matched)} transactions. Largest items: {details}."
+
+    if has_any(question_lc, ["budget", "over budget", "remaining", "limit"]):
+        if not budget_progress:
+            return f"No budget exists for {month}. Create category budgets and the app will calculate usage from transactions."
+        overspent = [item for item in budget_progress if item["spent"] > item["budgetAmount"]]
+        near_limit = [item for item in budget_progress if item["spent"] <= item["budgetAmount"] and item["usedPercent"] >= 80]
+        if overspent:
+            lines = [
+                f"{label_en(item['category'], CATEGORY_LABELS_EN)} is over by {vnd(item['spent'] - item['budgetAmount'])} "
+                f"({vnd(item['spent'])}/{vnd(item['budgetAmount'])})"
+                for item in overspent
+            ]
+            return f"In {month}, you are over budget in: " + "; ".join(lines) + ". Stop extra spending in those categories first."
+        if near_limit:
+            lines = [f"{label_en(item['category'], CATEGORY_LABELS_EN)} has used {item['usedPercent']}%" for item in near_limit]
+            return f"In {month}, no category is over budget yet, but watch: " + "; ".join(lines) + "."
+        used_text = "; ".join(f"{label_en(item['category'], CATEGORY_LABELS_EN)} {item['usedPercent']}%" for item in budget_progress[:4])
+        return f"In {month}, no category is over budget. Current usage: {used_text}."
+
+    if has_any(question_lc, ["next month budget", "budget suggestion", "suggest budget"]):
+        if not budget_suggestions:
+            return "There is not enough history to suggest next month's budget yet."
+        top_suggestions = "; ".join(
+            f"{label_en(item['category'], CATEGORY_LABELS_EN)}: {vnd(item['suggestedAmount'])} ({item['trend']})"
+            for item in budget_suggestions[:5]
+        )
+        return f"Budget suggestions based on recent months: {top_suggestions}."
+
+    if has_any(question_lc, ["biggest", "largest transaction", "largest expense"]):
+        if biggest_expense:
+            return f"The largest expense in {month} is '{label_en(biggest_expense['note'], NOTE_LABELS_EN)}' in {label_en(biggest_expense['category'], CATEGORY_LABELS_EN)}: {vnd(biggest_expense['amount'])}."
+        return f"No expense transactions exist in {month} to identify the largest item."
+
+    if has_any(question_lc, ["most", "spend most", "top spending"]):
+        if top_category:
+            category_expenses = [tx for tx in expenses if tx["category"] == top_category["category"]]
+            examples = sorted(category_expenses, key=lambda tx: float(tx["amount"]), reverse=True)[:2]
+            example_text = "; ".join(f"{label_en(tx['note'], NOTE_LABELS_EN)} {vnd(tx['amount'])}" for tx in examples)
+            return (
+                f"In {month}, you spent the most on {label_en(top_category['category'], CATEGORY_LABELS_EN)}: {vnd(top_category['total'])}. "
+                f"Notable items: {example_text or 'no detailed transactions'}. Review this category first."
+            )
+        return "There are not enough expense transactions this month to identify the top category."
+
+    if has_any(question_lc, ["compare", "last month", "previous month"]):
+        return (
+            f"Compared with {comparison.get('previousMonth')}, income changed by {vnd(comparison.get('incomeChange', 0))}, "
+            f"expenses changed by {vnd(comparison.get('expenseChange', 0))}, and net cash flow changed by "
+            f"{vnd(comparison.get('cashFlowChange', 0))}."
+        )
+
+    if has_any(question_lc, ["save", "saving", "savings"]):
+        suggested = max(net_cash_flow * 0.5, dashboard["totalIncome"] * 0.1) if dashboard["totalIncome"] else 0
+        return (
+            f"The saving rate for {month} is {savings_rate}%, with net cash flow {vnd(net_cash_flow)}. "
+            f"A practical saving target is around {vnd(suggested)} if essential spending stays stable. "
+            "Reduce the largest spending category first instead of cutting everything evenly."
+        )
+
+    if has_any(question_lc, ["risky", "risk", "unusual", "warning"]):
+        alerts = []
+        if top_category and dashboard["totalExpense"]:
+            share = round(float(top_category["total"]) / max(float(dashboard["totalExpense"]), 1) * 100, 1)
+            if share >= 40:
+                alerts.append(f"{label_en(top_category['category'], CATEGORY_LABELS_EN)} is {share}% of total spending")
+        overspent = [item for item in budget_progress if item["spent"] > item["budgetAmount"]]
+        if overspent:
+            alerts.append("over-budget categories: " + ", ".join(label_en(item["category"], CATEGORY_LABELS_EN) for item in overspent))
+        if dashboard["netCashFlow"] < 0:
+            alerts.append("net cash flow is negative")
+        if alerts:
+            return f"Areas to watch in {month}: " + "; ".join(alerts) + "."
+        return f"No major issue stands out. Track {label_en(top_category['category'], CATEGORY_LABELS_EN) if top_category else 'top categories'} because it leads spending."
+
+    if has_any(question_lc, ["category", "breakdown", "allocation"]):
+        if not category_summary:
+            return f"No category data exists for {month}."
+        ranking = "; ".join(f"{label_en(item['category'], CATEGORY_LABELS_EN)}: {vnd(item['total'])}" for item in category_summary[:5])
+        return f"Expense breakdown for {month}: {ranking}."
+
+    if has_any(question_lc, ["income", "expense", "cash flow", "balance", "net"]):
+        return (
+            f"{month}: total income {vnd(dashboard['totalIncome'])}, total expenses {vnd(dashboard['totalExpense'])}, "
+            f"net cash flow {vnd(dashboard['netCashFlow'])}, saving rate {savings_rate}%."
+        )
+
+    recurring = dashboard.get("recurringTransactions") or []
+    if has_any(question_lc, ["recurring", "subscription", "monthly"]):
+        if recurring:
+            names = "; ".join(f"{label_en(item['note'], NOTE_LABELS_EN)} ({vnd(item.get('estimatedAmount'))})" for item in recurring[:5])
+            return f"Likely recurring items: {names}."
+        return "No clear recurring items have been detected from the current data."
+
+    if biggest_expense:
+        return (
+            f"With {month} data: income {vnd(dashboard['totalIncome'])}, expenses {vnd(dashboard['totalExpense'])}, "
+            f"net cash flow {vnd(net_cash_flow)}. The largest expense is '{label_en(biggest_expense['note'], NOTE_LABELS_EN)}' "
+            f"({vnd(biggest_expense['amount'])}). Ask about a category, budget, totals, or month comparison for more detail."
+        )
+    return f"{month} has some data, but not enough to answer confidently. Ask by category, budget, total spending, or month comparison."
+
+
+def generate_local_ai_answer(question: str, context: dict, language: str = "vi"):
+    if language == "en":
+        return generate_local_ai_answer_en(question, context)
     dashboard = context["dashboard"]
     question_lc = normalize_ai_text(question)
     top_category = dashboard.get("topSpendingCategory")
@@ -2329,7 +2545,7 @@ def generate_local_ai_answer(question: str, context: dict):
     return f"Tháng {month} có dữ liệu nhưng chưa đủ để trả lời chắc chắn. Bạn có thể hỏi theo danh mục, ngân sách, tổng chi hoặc so sánh tháng."
 
 
-def generate_local_ai_report(month: str, scope: str = "month", source: str = "all"):
+def generate_local_ai_report(month: str, scope: str = "month", source: str = "all", language: str = "vi"):
     month = normalize_month(month, current_month_utc())
     scope = scope if scope in {"month", "year"} else "month"
     source = normalize_source_filter(source)
@@ -2337,6 +2553,82 @@ def generate_local_ai_report(month: str, scope: str = "month", source: str = "al
     analytics = get_analytics_12m(month, source)
     budget_progress = get_budget_progress(month, source)
     budget_suggestions = get_budget_suggestions(month, source)
+
+    if language == "en":
+        if scope == "year":
+            summary = analytics["summary"]
+            if not summary:
+                return {
+                    "title": "12-month report",
+                    "scope": scope,
+                    "month": month,
+                    "dataSource": source,
+                    "overview": "Not enough 12-month data to create a report.",
+                    "risks": [],
+                    "opportunities": [],
+                    "actions": ["Load 12-month sample data or add real transactions."],
+                }
+            risks = []
+            if summary["topCategory"]:
+                risks.append(f"Largest 12-month spending category: {label_en(summary['topCategory']['category'], CATEGORY_LABELS_EN)} ({vnd(summary['topCategory']['total'])}).")
+            risks.append(f"Highest spending month: {summary['highestExpenseMonth']['month']} ({vnd(summary['highestExpenseMonth']['total_expense'])}).")
+            opportunities = [
+                f"12-month net cash flow: {vnd(summary['totalCashFlow'])}.",
+                f"Average saving rate: {summary['averageSavingsRate']}%.",
+            ]
+            actions = [
+                f"Use {summary['highestExpenseMonth']['month']} as a benchmark month to review unusual increases.",
+                "Set next month's budget around the top 3-5 spending categories.",
+            ]
+            if budget_suggestions:
+                actions.append("Priority budget suggestions: " + "; ".join(f"{label_en(item['category'], CATEGORY_LABELS_EN)} {vnd(item['suggestedAmount'])}" for item in budget_suggestions[:3]) + ".")
+            return {
+                "title": "12-month financial report",
+                "scope": scope,
+                "month": month,
+                "dataSource": source,
+                "overview": (
+                    f"From {analytics['startMonth']} to {month}: total income {vnd(summary['totalIncome'])}, "
+                    f"total expenses {vnd(summary['totalExpense'])}, net cash flow {vnd(summary['totalCashFlow'])}."
+                ),
+                "risks": risks,
+                "opportunities": opportunities,
+                "actions": actions,
+            }
+
+        overspent = [item for item in budget_progress if item["spent"] > item["budgetAmount"]]
+        near_limit = [item for item in budget_progress if item["spent"] <= item["budgetAmount"] and item["usedPercent"] >= 80]
+        risks = []
+        if dashboard["topSpendingCategory"]:
+            risks.append(f"Top spending category: {label_en(dashboard['topSpendingCategory']['category'], CATEGORY_LABELS_EN)} ({vnd(dashboard['topSpendingCategory']['total'])}).")
+        if dashboard["biggestExpense"]:
+            risks.append(f"Largest transaction: {label_en(dashboard['biggestExpense']['note'], NOTE_LABELS_EN)} ({vnd(dashboard['biggestExpense']['amount'])}).")
+        if overspent:
+            risks.extend(f"{label_en(item['category'], CATEGORY_LABELS_EN)} is over budget by {vnd(item['spent'] - item['budgetAmount'])}." for item in overspent)
+        elif near_limit:
+            risks.extend(f"{label_en(item['category'], CATEGORY_LABELS_EN)} has used {item['usedPercent']}% of its budget." for item in near_limit)
+        actions = [
+            "Review the largest spending category before cutting small items.",
+            "Keep a weekly spending limit for categories close to budget.",
+        ]
+        if budget_suggestions:
+            actions.append("Next month's budget should start with: " + "; ".join(f"{label_en(item['category'], CATEGORY_LABELS_EN)} {vnd(item['suggestedAmount'])}" for item in budget_suggestions[:3]) + ".")
+        return {
+            "title": f"Financial report for {month}",
+            "scope": scope,
+            "month": month,
+            "dataSource": source,
+            "overview": (
+                f"{month}: income {vnd(dashboard['totalIncome'])}, expenses {vnd(dashboard['totalExpense'])}, "
+                f"net cash flow {vnd(dashboard['netCashFlow'])}, saving rate {dashboard['savingsRate']}%."
+            ),
+            "risks": risks or ["No major risk is visible for the selected month."],
+            "opportunities": [
+                f"About {vnd(max(dashboard['netCashFlow'] * 0.5, 0))} could go to savings/investing if spending stays stable.",
+                f"Compared with last month, expenses changed by {vnd(dashboard['comparison']['expenseChange'])}.",
+            ],
+            "actions": actions,
+        }
 
     if scope == "year":
         summary = analytics["summary"]
@@ -2364,7 +2656,7 @@ def generate_local_ai_report(month: str, scope: str = "month", source: str = "al
             "Đặt ngân sách tháng sau theo 3-5 danh mục chi lớn nhất.",
         ]
         if budget_suggestions:
-            actions.append("Gợi ý budget ưu tiên: " + "; ".join(f"{item['category']} {vnd(item['suggestedAmount'])}" for item in budget_suggestions[:3]) + ".")
+            actions.append("Gợi ý ngân sách ưu tiên: " + "; ".join(f"{item['category']} {vnd(item['suggestedAmount'])}" for item in budget_suggestions[:3]) + ".")
         return {
             "title": "Báo cáo tài chính 12 tháng",
             "scope": scope,
@@ -2396,7 +2688,7 @@ def generate_local_ai_report(month: str, scope: str = "month", source: str = "al
         "Giữ một ngưỡng chi tiêu tuần cho các danh mục gần chạm ngân sách.",
     ]
     if budget_suggestions:
-        actions.append("Budget tháng sau nên bắt đầu với: " + "; ".join(f"{item['category']} {vnd(item['suggestedAmount'])}" for item in budget_suggestions[:3]) + ".")
+        actions.append("Ngân sách tháng sau nên bắt đầu với: " + "; ".join(f"{item['category']} {vnd(item['suggestedAmount'])}" for item in budget_suggestions[:3]) + ".")
 
     return {
         "title": f"Báo cáo tài chính tháng {month}",
@@ -2416,7 +2708,7 @@ def generate_local_ai_report(month: str, scope: str = "month", source: str = "al
     }
 
 
-def generate_openai_chat_answer(question: str, history: list | None = None, month: str = None, scope: str = "month", source: str = "all"):
+def generate_openai_chat_answer(question: str, history: list | None = None, month: str = None, scope: str = "month", source: str = "all", language: str = "vi"):
     if not question:
         raise ValueError("Câu hỏi không được để trống")
     if OpenAI is None:
@@ -2426,11 +2718,12 @@ def generate_openai_chat_answer(question: str, history: list | None = None, mont
 
     context = build_ai_context(month, scope, source)
     client = OpenAI()
+    output_language = "English" if language == "en" else "Vietnamese"
     messages = [
         {
             "role": "system",
             "content": (
-                "You are an in-app personal finance assistant. Answer in Vietnamese, concise and practical. "
+                f"You are an in-app personal finance assistant. Answer in {output_language}, concise and practical. "
                 "Ground every answer in the provided transaction and analytics context. If data is insufficient, say so and suggest what to add."
             ),
         },
@@ -2451,7 +2744,7 @@ def generate_openai_chat_answer(question: str, history: list | None = None, mont
         messages=messages,
         temperature=0.2,
     )
-    return response.choices[0].message.content or "Tôi chưa tạo được câu trả lời. Vui lòng thử lại."
+    return response.choices[0].message.content or ("I could not generate an answer. Please try again." if language == "en" else "Tôi chưa tạo được câu trả lời. Vui lòng thử lại.")
 
 
 @app.route("/api/transactions", methods=["GET"])
@@ -2790,6 +3083,7 @@ def api_ai_analysis():
 def api_ai_insight():
     data = request.get_json(silent=True) or {}
     source = normalize_source_filter(data.get("source") if request.method == "POST" else request.args.get("source"))
+    language = normalize_language(data.get("language") if request.method == "POST" else request.args.get("language"))
     try:
         if request.method == "POST":
             month = normalize_month(data.get("month"), current_month_utc())
@@ -2802,16 +3096,16 @@ def api_ai_insight():
     if transactions is None:
         transactions = query_transactions(month=month, source=source)
     try:
-        insight = generate_openai_insight(transactions, month=month)
+        insight = generate_openai_insight(transactions, month=month, language=language)
         return jsonify({"source": "openai", "month": month, "dataSource": source, **insight})
     except (RuntimeError, OpenAIError, json.JSONDecodeError) as error:
-        fallback = build_local_ai_insight(transactions, month=month)
+        fallback = build_local_ai_insight(transactions, month=month, language=language)
         return jsonify({
             "source": "local-fallback",
             "month": month,
             "dataSource": source,
             "error": str(error),
-            "message": "OpenAI chưa khả dụng. Đang hiển thị phân tích local dựa trên dữ liệu giao dịch hiện có.",
+            "message": "OpenAI is unavailable. Showing local analysis based on existing transaction data." if language == "en" else "OpenAI chưa khả dụng. Đang hiển thị phân tích local dựa trên dữ liệu giao dịch hiện có.",
             **fallback,
         })
     except Exception as error:
@@ -2960,45 +3254,67 @@ def format_report_money(value):
     return f"{float(value or 0):,.0f} VND"
 
 
-def render_finance_report_html(month, source):
+def render_finance_report_html(month, source, language="vi"):
     source = normalize_source_filter(source)
+    language = normalize_language(language)
     summary = get_summary(month, source)
     dashboard = get_dashboard_summary(month, source)
     analytics = get_analytics_12m(month or current_month_utc(), source)
     recurring_items = [item for item in detect_recurring_transactions(source) if item["status"] != "ignored"][:8]
     transactions = query_transactions(month=month, source=source)[:20]
-    title_month = month or "Tất cả dữ liệu"
-    source_label = {
+    title_month = month or ("All data" if language == "en" else "Tất cả dữ liệu")
+    source_label = ({
+        "all": "All data",
+        "sample": "Sample data",
+        "manual": "Manual entries",
+        "import": "CSV import",
+        "real": "Real data",
+    } if language == "en" else {
         "all": "Tất cả dữ liệu",
         "sample": "Dữ liệu mẫu",
         "manual": "Nhập tay",
-        "import": "Import CSV",
+        "import": "Nhập CSV",
         "real": "Dữ liệu thật",
-    }.get(source, "Tất cả dữ liệu")
+    }).get(source, "All data" if language == "en" else "Tất cả dữ liệu")
+
+    def txt(vi, en):
+        return en if language == "en" else vi
+
+    def cat(value):
+        return label_en(value, CATEGORY_LABELS_EN) if language == "en" else value
+
+    def note(value):
+        return label_en(value, NOTE_LABELS_EN) if language == "en" else value
 
     def esc(value):
         return html.escape(str(value if value is not None else ""))
 
     insights = dashboard.get("quickInsights") or []
     category_rows = "".join(
-        f"<tr><td>{esc(item['category'])}</td><td>{format_report_money(item['total'])}</td></tr>"
+        f"<tr><td>{esc(cat(item['category']))}</td><td>{format_report_money(item['total'])}</td></tr>"
         for item in (analytics.get("categoryTotals") or [])[:8]
     )
     recurring_rows = "".join(
-        f"<tr><td>{esc(item['note'])}</td><td>{esc(item['category'])}</td><td>{format_report_money(item['estimatedAmount'])}</td><td>{esc(item['status'])}</td></tr>"
+        f"<tr><td>{esc(note(item['note']))}</td><td>{esc(cat(item['category']))}</td><td>{format_report_money(item['estimatedAmount'])}</td><td>{esc(item['status'])}</td></tr>"
         for item in recurring_items
-    ) or "<tr><td colspan='4'>Chưa phát hiện khoản định kỳ.</td></tr>"
+    ) or f"<tr><td colspan='4'>{txt('Chưa phát hiện khoản định kỳ.', 'No recurring items detected.')}</td></tr>"
     transaction_rows = "".join(
-        f"<tr><td>{esc(tx['date'])}</td><td>{esc(tx['type'])}</td><td>{esc(tx['category'])}</td><td>{esc(tx['note'])}</td><td>{format_report_money(tx['amount'])}</td></tr>"
+        f"<tr><td>{esc(tx['date'])}</td><td>{esc(txt('Thu' if tx['type'] == 'income' else 'Chi', 'Income' if tx['type'] == 'income' else 'Expense'))}</td><td>{esc(cat(tx['category']))}</td><td>{esc(note(tx['note']))}</td><td>{format_report_money(tx['amount'])}</td></tr>"
         for tx in transactions
-    ) or "<tr><td colspan='5'>Không có giao dịch trong phạm vi này.</td></tr>"
-    insight_items = "".join(f"<li>{esc(item)}</li>" for item in insights) or "<li>Chưa đủ dữ liệu để tạo insight.</li>"
+    ) or f"<tr><td colspan='5'>{txt('Không có giao dịch trong phạm vi này.', 'No transactions in this scope.')}</td></tr>"
+    if language == "en":
+        insights = []
+        if dashboard.get("topSpendingCategory"):
+            insights.append(f"Top spending category: {cat(dashboard['topSpendingCategory']['category'])} ({format_report_money(dashboard['topSpendingCategory']['total'])}).")
+        if dashboard.get("biggestExpense"):
+            insights.append(f"Largest expense: {note(dashboard['biggestExpense']['note'])} ({format_report_money(dashboard['biggestExpense']['amount'])}).")
+    insight_items = "".join(f"<li>{esc(item)}</li>" for item in insights) or f"<li>{txt('Chưa đủ dữ liệu để tạo insight.', 'Not enough data to generate insights.')}</li>"
 
     return f"""<!doctype html>
-<html lang="vi">
+<html lang="{esc(language)}">
 <head>
   <meta charset="utf-8">
-  <title>Báo cáo tài chính {esc(title_month)}</title>
+  <title>{txt('Báo cáo tài chính', 'Financial report')} {esc(title_month)}</title>
   <style>
     body {{ margin: 0; font-family: Inter, Segoe UI, Arial, sans-serif; background: #0f172a; color: #f8fafc; }}
     main {{ max-width: 1080px; margin: 0 auto; padding: 36px 24px 56px; }}
@@ -3021,24 +3337,24 @@ def render_finance_report_html(month, source):
 <body>
 <main>
   <section class="hero">
-    <p>{esc(source_label)} · tạo lúc {esc(utc_now().strftime("%Y-%m-%d %H:%M UTC"))}</p>
-    <h1>Báo cáo tài chính {esc(title_month)}</h1>
-    <p>Tổng hợp dòng tiền, ngân sách, danh mục chi tiêu và khoản định kỳ từ Lux Money AI.</p>
+    <p>{esc(source_label)} - {txt('tạo lúc', 'generated at')} {esc(utc_now().strftime("%Y-%m-%d %H:%M UTC"))}</p>
+    <h1>{txt('Báo cáo tài chính', 'Financial report')} {esc(title_month)}</h1>
+    <p>{txt('Tổng hợp dòng tiền, ngân sách, danh mục chi tiêu và khoản định kỳ từ Lux Money AI.', 'Cash flow, budgets, spending categories, and recurring items summarized by Lux Money AI.')}</p>
     <div class="grid">
-      <div class="card"><span>Thu nhập</span><strong>{format_report_money(summary['income'])}</strong></div>
-      <div class="card"><span>Chi tiêu</span><strong>{format_report_money(summary['expense'])}</strong></div>
-      <div class="card"><span>Dòng tiền</span><strong class="{'positive' if summary['balance'] >= 0 else 'negative'}">{format_report_money(summary['balance'])}</strong></div>
-      <div class="card"><span>Savings rate</span><strong>{float(dashboard.get('savingsRate') or 0):.1f}%</strong></div>
+      <div class="card"><span>{txt('Thu nhập', 'Income')}</span><strong>{format_report_money(summary['income'])}</strong></div>
+      <div class="card"><span>{txt('Chi tiêu', 'Expense')}</span><strong>{format_report_money(summary['expense'])}</strong></div>
+      <div class="card"><span>{txt('Dòng tiền', 'Cash flow')}</span><strong class="{'positive' if summary['balance'] >= 0 else 'negative'}">{format_report_money(summary['balance'])}</strong></div>
+      <div class="card"><span>{txt('Tỷ lệ tiết kiệm', 'Saving rate')}</span><strong>{float(dashboard.get('savingsRate') or 0):.1f}%</strong></div>
     </div>
   </section>
-  <h2>Insight chính</h2>
+  <h2>{txt('Insight chính', 'Key insights')}</h2>
   <ul>{insight_items}</ul>
-  <h2>Top danh mục 12 tháng</h2>
-  <table><thead><tr><th>Danh mục</th><th>Tổng chi</th></tr></thead><tbody>{category_rows}</tbody></table>
-  <h2>Khoản định kỳ</h2>
-  <table><thead><tr><th>Khoản</th><th>Danh mục</th><th>Dự kiến/tháng</th><th>Trạng thái</th></tr></thead><tbody>{recurring_rows}</tbody></table>
-  <h2>Giao dịch gần đây</h2>
-  <table><thead><tr><th>Ngày</th><th>Loại</th><th>Danh mục</th><th>Ghi chú</th><th>Số tiền</th></tr></thead><tbody>{transaction_rows}</tbody></table>
+  <h2>{txt('Top danh mục 12 tháng', 'Top 12-month categories')}</h2>
+  <table><thead><tr><th>{txt('Danh mục', 'Category')}</th><th>{txt('Tổng chi', 'Total spent')}</th></tr></thead><tbody>{category_rows}</tbody></table>
+  <h2>{txt('Khoản định kỳ', 'Recurring items')}</h2>
+  <table><thead><tr><th>{txt('Khoản', 'Item')}</th><th>{txt('Danh mục', 'Category')}</th><th>{txt('Dự kiến/tháng', 'Estimated/month')}</th><th>{txt('Trạng thái', 'Status')}</th></tr></thead><tbody>{recurring_rows}</tbody></table>
+  <h2>{txt('Giao dịch gần đây', 'Recent transactions')}</h2>
+  <table><thead><tr><th>{txt('Ngày', 'Date')}</th><th>{txt('Loại', 'Type')}</th><th>{txt('Danh mục', 'Category')}</th><th>{txt('Ghi chú', 'Note')}</th><th>{txt('Số tiền', 'Amount')}</th></tr></thead><tbody>{transaction_rows}</tbody></table>
 </main>
 </body>
 </html>"""
@@ -3051,10 +3367,12 @@ def api_export_report():
     except ValueError as error:
         return jsonify({"error": str(error)}), 400
     source = normalize_source_filter(request.args.get("source"))
-    content = render_finance_report_html(month, source)
+    language = normalize_language(request.args.get("language"))
+    content = render_finance_report_html(month, source, language)
     filename_month = month or "tat-ca"
     response = Response(content, mimetype="text/html")
-    response.headers["Content-Disposition"] = f"attachment; filename=bao-cao-tai-chinh-{filename_month}.html"
+    filename_prefix = "financial-report" if language == "en" else "bao-cao-tai-chinh"
+    response.headers["Content-Disposition"] = f"attachment; filename={filename_prefix}-{filename_month}.html"
     return response
 
 
@@ -3119,6 +3437,7 @@ def api_chat():
     if scope not in {"month", "year"}:
         scope = "month"
     source = normalize_source_filter(data.get("source"))
+    language = normalize_language(data.get("language"))
     try:
         month = normalize_month(data.get("month"), current_month_utc())
     except ValueError as error:
@@ -3127,7 +3446,7 @@ def api_chat():
         return jsonify({"error": "Tin nhắn không được để trống"}), 400
 
     try:
-        answer = generate_openai_chat_answer(message, history, month=month, scope=scope, source=source)
+        answer = generate_openai_chat_answer(message, history, month=month, scope=scope, source=source, language=language)
         return jsonify({"source": "openai", "month": month, "scope": scope, "dataSource": source, "response": answer})
     except (RuntimeError, OpenAIError, ValueError) as error:
         context = build_ai_context(month, scope, source)
@@ -3136,9 +3455,9 @@ def api_chat():
             "month": month,
             "scope": scope,
             "dataSource": source,
-            "message": "AI cloud chưa khả dụng. Đang trả lời bằng phân tích cục bộ từ dữ liệu giao dịch.",
+            "message": "AI cloud is unavailable. Answering with local transaction analysis." if language == "en" else "AI cloud chưa khả dụng. Đang trả lời bằng phân tích cục bộ từ dữ liệu giao dịch.",
             "error": str(error),
-            "response": generate_local_ai_answer(message, context),
+            "response": generate_local_ai_answer(message, context, language),
         })
     except Exception as error:
         return jsonify({"error": f"Không thể trả lời AI chat: {error}"}), 500
@@ -3160,7 +3479,8 @@ def api_ai_report():
     except ValueError as error:
         return jsonify({"error": str(error)}), 400
     source = normalize_source_filter(data.get("source"))
-    return jsonify({"source": "local-report", **generate_local_ai_report(month, scope, source)})
+    language = normalize_language(data.get("language"))
+    return jsonify({"source": "local-report", **generate_local_ai_report(month, scope, source, language)})
 
 
 if __name__ == "__main__":

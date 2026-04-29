@@ -42,7 +42,7 @@ The app includes a 12-month sample dataset for demo and analysis. Users can also
 ## Core Features
 
 - Monthly dashboard with income, expenses, net cash flow, saving rate, top category, and largest transaction.
-- Bilingual interface switcher for English and Vietnamese.
+- Globe language selector for English and Vietnamese, including static UI, dynamic dashboard text, local AI fallback, AI reports, and exported HTML reports.
 - Transaction CRUD with filters for month, type, category, search term, source, and sorting.
 - Data source filters for all data, sample data, real data, manual entries, and CSV imports.
 - CSV/XLSX import wizard with preview, automatic header detection, dropdown column mapping, and duplicate protection.
@@ -52,7 +52,7 @@ The app includes a 12-month sample dataset for demo and analysis. Users can also
 - Recurring and subscription detection with confirm or ignore actions.
 - AI assistant for monthly insights, transaction-based Q&A, and monthly or 12-month reports.
 - Local analytical fallback when OpenAI is not configured.
-- CSV transaction export and HTML finance report export.
+- CSV transaction export and bilingual HTML finance report export.
 - SQLite backup and restore.
 - Lightweight local account system for user-linked data.
 - CSRF protection for write requests and basic login rate limiting.
@@ -95,6 +95,15 @@ http://127.0.0.1:5000
 
 The default SQLite file is `finance.db` in the project root. When the app starts, it automatically migrates required schema columns such as `date`, `note`, and `source`.
 
+## Language Support
+
+Use the globe selector in the header to switch between:
+
+- `Tiếng Việt`: Vietnamese-first interface, dashboard labels, AI fallback, reports, and data actions.
+- `English`: English interface, translated sample categories/notes, local AI fallback, AI reports, and HTML report export.
+
+The selected language is saved in browser local storage. OpenAI prompts also receive the current language so cloud AI responses match the active interface language.
+
 ## Sample Data
 
 The dashboard includes an action to load 12 months of sample data. Sample records are marked with `source = sample`, so they can be filtered separately from manually entered or imported transactions.
@@ -135,6 +144,7 @@ AI requests are handled through backend routes. API keys are never hardcoded in 
 - Model: `gpt-4.1-mini`
 - Environment variable: `OPENAI_API_KEY`
 - If the API key is missing or OpenAI returns an error, the app uses a local fallback instead of crashing.
+- AI fallback and generated reports follow the language selected in the dashboard.
 - To enable OpenAI responses, add `OPENAI_API_KEY` to `.env`, save the file, and restart `python app.py`.
 
 Example questions:
@@ -151,6 +161,7 @@ In the Transactions tab:
 
 - CSV export downloads transactions based on the selected month and data source filters.
 - HTML report export generates a finance report with summary metrics, insights, top categories, recurring items, and recent transactions.
+- HTML reports are generated in the active dashboard language.
 
 The HTML report can be opened in a browser and printed or saved as PDF with `Ctrl+P`.
 

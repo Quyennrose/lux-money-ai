@@ -71,6 +71,7 @@ const csvMappingInputs = {
 };
 const themeLightBtn = document.getElementById("theme-light");
 const themeDarkBtn = document.getElementById("theme-dark");
+const languageSelect = document.getElementById("language-select");
 const languageViBtn = document.getElementById("language-vi");
 const languageEnBtn = document.getElementById("language-en");
 const vipInsightsList = document.getElementById("vip-insights-list");
@@ -149,7 +150,14 @@ const LANGUAGE_TEXT = {
     "Chọn giao diện": "Theme",
     "Sáng": "Light",
     "Tối": "Dark",
-    "Money intelligence dashboard": "Money intelligence dashboard",
+    "Bảng điều khiển tài chính thông minh": "Money intelligence dashboard",
+    "THU": "IN",
+    "CHI": "OUT",
+    "RÒNG": "NET",
+    "RR": "RISK",
+    "SK": "HLTH",
+    "NS": "BUD",
+    "TK": "SAVE",
     "Theo dõi dòng tiền, ngân sách và thói quen chi tiêu theo từng tháng với AI phân tích thực tế.": "Track cash flow, budgets, and monthly spending behavior with practical AI analysis.",
     "Tổng quan": "Overview",
     "Giao dịch": "Transactions",
@@ -158,7 +166,7 @@ const LANGUAGE_TEXT = {
     "Mục tiêu": "Goals",
     "Dữ liệu": "Data",
     "Tổng quan theo tháng": "Monthly Overview",
-    "Chọn tháng để dashboard, ngân sách, giao dịch và AI insight chỉ tính trên đúng kỳ đó.": "Choose a month so dashboard metrics, budgets, transactions, and AI insights use the same period.",
+    "Chọn tháng để bảng điều khiển, ngân sách, giao dịch và phân tích AI chỉ tính trên đúng kỳ đó.": "Choose a month so dashboard metrics, budgets, transactions, and AI insights use the same period.",
     "Tháng đang xem": "Selected month",
     "Thêm giao dịch": "Add Transaction",
     "Mô tả": "Description",
@@ -199,16 +207,19 @@ const LANGUAGE_TEXT = {
     "Tỷ lệ tiết kiệm": "Saving rate",
     "Top danh mục": "Top category",
     "Chi lớn nhất": "Largest expense",
-    "Transaction Command Center": "Transaction Command Center",
+    "Điểm VIP": "VIP Score",
+    "Rủi ro VIP": "VIP Risk",
+    "Chỉ số sức khỏe": "Health Index",
+    "Trung tâm giao dịch": "Transaction Command Center",
     "Lọc, tìm kiếm, sắp xếp và rà soát giao dịch theo tháng.": "Filter, search, sort, and review transactions by month.",
     "Xuất báo cáo CSV": "Export CSV",
-    "Xuất report HTML": "Export HTML report",
+    "Xuất báo cáo HTML": "Export HTML report",
     "Nguồn dữ liệu": "Data source",
     "Tất cả": "All",
     "Dữ liệu mẫu": "Sample data",
     "Dữ liệu thật": "Real data",
     "Nhập tay": "Manual entry",
-    "Import CSV": "CSV import",
+    "Nhập CSV": "CSV import",
     "Ví dụ: Ăn uống": "Example: Food",
     "Tìm kiếm": "Search",
     "Tìm theo ghi chú...": "Search by note...",
@@ -217,8 +228,8 @@ const LANGUAGE_TEXT = {
     "Cũ nhất": "Oldest",
     "Số tiền cao nhất": "Highest amount",
     "Số tiền thấp nhất": "Lowest amount",
-    "Import giao dịch": "Import Transactions",
-    "Upload CSV, TSV hoặc XLSX ngân hàng/file tự xuất. Bỏ trống mapping nếu file dùng tên cột phổ biến như date, amount, note.": "Upload a bank CSV, TSV, XLSX, or exported file. Leave mapping blank if the file uses common column names such as date, amount, or note.",
+    "Nhập giao dịch": "Import Transactions",
+    "Tải lên file CSV, TSV hoặc XLSX từ ngân hàng/file tự xuất. Bỏ trống ánh xạ nếu file dùng tên cột phổ biến như ngày, số tiền, ghi chú.": "Upload a bank CSV, TSV, XLSX, or exported file. Leave mapping blank if the file uses common column names such as date, amount, or note.",
     "File CSV/TSV/XLSX": "CSV/TSV/XLSX file",
     "Định dạng ngày": "Date format",
     "Tự nhận diện": "Auto detect",
@@ -232,15 +243,15 @@ const LANGUAGE_TEXT = {
     "Không dùng": "Not used",
     "Tự phân loại": "Auto categorize",
     "Xem trước": "Preview",
-    "Import file": "Import file",
+    "Nhập file": "Import file",
     "Xóa dữ liệu import": "Clear imported data",
     "Chọn file rồi bấm “Xem trước” để kiểm tra mapping trước khi import.": "Choose a file and click Preview to check column mapping before import.",
     "Chưa import file nào.": "No file imported yet.",
     "Xu hướng theo tháng": "Monthly Trends",
-    "Analytics 12 tháng": "12-Month Analytics",
+    "Phân tích 12 tháng": "12-Month Analytics",
     "Nhìn nhanh dòng tiền, tỷ lệ tiết kiệm và tháng có chi tiêu cao nhất.": "Quickly review cash flow, saving rate, and the highest-spending month.",
     "So với trung bình 12 tháng": "Compared with 12-month average",
-    "Heatmap chi tiêu tháng": "Monthly spending heatmap",
+    "Bản đồ nhiệt chi tiêu tháng": "Monthly spending heatmap",
     "Xu hướng top danh mục": "Top category trend",
     "Phân tích tài chính": "Financial Analysis",
     "Xu hướng:": "Trend:",
@@ -248,17 +259,18 @@ const LANGUAGE_TEXT = {
     "Thu nhập dự báo 30 ngày:": "30-day forecast income:",
     "Chi tiêu dự báo 30 ngày:": "30-day forecast expenses:",
     "Tiết kiệm đề xuất:": "Suggested savings:",
-    "LUX AI VIP Insights": "Lux AI VIP Insights",
-    "Bản phân tích executive cho tháng hiện tại: rủi ro, cơ hội và hành động ưu tiên.": "Executive analysis for the current month: risks, opportunities, and priority actions.",
+    "Góc nhìn VIP từ LUX AI": "Lux AI VIP Insights",
+    "Bản phân tích điều hành cho tháng hiện tại: rủi ro, cơ hội và hành động ưu tiên.": "Executive analysis for the current month: risks, opportunities, and priority actions.",
     "Nạp dữ liệu mẫu 12 tháng": "Load 12-month sample data",
     "Tổng quan VIP": "VIP Overview",
     "Tải dữ liệu để hiển thị gợi ý VIP.": "Load data to show VIP suggestions.",
     "Ưu tiên hành động": "Priority actions",
-    "Hỏi LUX AI ngay trên dashboard": "Ask Lux AI from the dashboard",
+    "Rủi ro": "Risk",
+    "Hỏi LUX AI ngay trên bảng điều khiển": "Ask Lux AI from the dashboard",
     "Ví dụ: “Tháng này tôi chi nhiều nhất ở đâu?” hoặc “Làm sao tiết kiệm hơn tháng sau?”": "Example: “Where did I spend the most this month?” or “How can I save more next month?”",
     "Nhập câu hỏi bất kỳ về dữ liệu tài chính...": "Ask any question about your financial data...",
     "Hỏi AI": "Ask AI",
-    "AI sẽ trả lời dựa trên giao dịch thật trong app.": "AI will answer based on transactions in the app.",
+    "AI sẽ trả lời dựa trên giao dịch thật trong ứng dụng.": "AI will answer based on transactions in the app.",
     "Chiến lược tài chính cá nhân": "Personal Financial Strategy",
     "Phong cách tài chính": "Financial style",
     "Giới hạn chi tiêu": "Spending limit",
@@ -273,17 +285,18 @@ const LANGUAGE_TEXT = {
     "Dựa trên chi tiêu gần đây để đề xuất mức ngân sách thực tế hơn.": "Based on recent spending to suggest more realistic budget targets.",
     "Danh sách ngân sách": "Budget List",
     "Khoản định kỳ": "Recurring Items",
-    "Tự phát hiện các khoản lặp lại như thuê nhà, hóa đơn, subscription hoặc đầu tư định kỳ từ giao dịch hiện có.": "Automatically detects recurring items such as rent, bills, subscriptions, or scheduled investments from existing transactions.",
+    "Tự phát hiện các khoản lặp lại như thuê nhà, hóa đơn, đăng ký dịch vụ hoặc đầu tư định kỳ từ giao dịch hiện có.": "Automatically detects recurring items such as rent, bills, subscriptions, or scheduled investments from existing transactions.",
     "Hỏi AI Tài Chính": "Ask Financial AI",
+    "Phân tích chi tiêu bằng AI": "AI Spending Insights",
     "Phân tích giao dịch bằng OpenAI và đề xuất hành động tiếp theo.": "Analyze transactions with OpenAI and suggest next actions.",
     "Tạo phân tích AI": "Generate AI insight",
-    "Report tháng": "Monthly report",
-    "Report 12 tháng": "12-month report",
+    "Báo cáo tháng": "Monthly report",
+    "Báo cáo 12 tháng": "12-month report",
     "Sẵn sàng phân tích dữ liệu giao dịch.": "Ready to analyze transaction data.",
     "Đang kiểm tra chế độ AI...": "Checking AI mode...",
     "Chưa tạo AI Spending Insight.": "No AI Spending Insight generated yet.",
     "Bấm “Tạo phân tích AI” để xem brief theo tháng đang chọn, gồm tổng quan, mẫu chi tiêu và hành động nên làm.": "Click Generate AI insight to view a brief for the selected month, including summary, spending patterns, and recommended actions.",
-    "LUX AI Assistant": "Lux AI Assistant",
+    "Trợ lý LUX AI": "Lux AI Assistant",
     "Hỏi tự do về chi tiêu, ngân sách, so sánh tháng và kế hoạch tiết kiệm. AI sẽ dùng dữ liệu giao dịch hiện có.": "Ask freely about spending, budgets, month comparisons, and saving plans. AI uses the available transaction data.",
     "Phạm vi": "Scope",
     "Tháng đang xem": "Selected month",
@@ -292,9 +305,9 @@ const LANGUAGE_TEXT = {
     "Gửi": "Send",
     "Xóa hội thoại": "Clear chat",
     "Giao dịch theo tháng": "Monthly Transactions",
-    "Dữ liệu, tài khoản & cài đặt app": "Data, Account & App Settings",
-    "Backup/restore SQLite, đăng nhập local và cài app như PWA. Dữ liệu mẫu hiện tại không bị xóa trừ khi bạn restore DB khác.": "Backup/restore SQLite, local login, and install the app as a PWA. Current sample data is not deleted unless you restore another database.",
-    "Tài khoản local": "Local account",
+    "Dữ liệu, tài khoản & cài đặt ứng dụng": "Data, Account & App Settings",
+    "Sao lưu/khôi phục SQLite, đăng nhập cục bộ và cài ứng dụng như PWA. Dữ liệu mẫu hiện tại không bị xóa trừ khi bạn khôi phục DB khác.": "Backup/restore SQLite, local login, and install the app as a PWA. Current sample data is not deleted unless you restore another database.",
+    "Tài khoản cục bộ": "Local account",
     "Đang kiểm tra trạng thái...": "Checking status...",
     "Tên hiển thị": "Display name",
     "Tên của bạn": "Your name",
@@ -303,15 +316,16 @@ const LANGUAGE_TEXT = {
     "Đăng nhập": "Log in",
     "Tạo tài khoản": "Create account",
     "Đăng xuất": "Log out",
-    "Backup tải file `finance.db`. Restore sẽ thay DB hiện tại và app tự tạo bản `.bak` trước khi ghi đè. Trên web public, phần này chỉ dành cho admin.": "Backup downloads the `finance.db` file. Restore replaces the current database and creates a `.bak` file before overwriting. On public deployments, this is admin-only.",
+    "Sao lưu / Khôi phục": "Backup / Restore",
+    "Sao lưu tải file `finance.db`. Khôi phục sẽ thay DB hiện tại và ứng dụng tự tạo bản `.bak` trước khi ghi đè. Trên web công khai, phần này chỉ dành cho quản trị viên.": "Backup downloads the `finance.db` file. Restore replaces the current database and creates a `.bak` file before overwriting. On public deployments, this is admin-only.",
     "Tải backup DB": "Download DB backup",
     "File backup SQLite": "SQLite backup file",
-    "Restore DB": "Restore DB",
+    "Khôi phục DB": "Restore DB",
     "Chưa có thao tác dữ liệu.": "No data action yet.",
-    "App có manifest và service worker để chạy giống app cài đặt trên máy hỗ trợ PWA.": "The app has a manifest and service worker so supported browsers can run it like an installed app.",
+    "Ứng dụng có manifest và service worker để chạy giống ứng dụng đã cài trên máy hỗ trợ PWA.": "The app has a manifest and service worker so supported browsers can run it like an installed app.",
     "Đang kiểm tra PWA...": "Checking PWA...",
     "Sửa lỗi phiên": "Session fix",
-    "Dùng khi trình duyệt báo CSRF token không hợp lệ sau khi server restart, login/logout hoặc PWA cache bản cũ.": "Use this when the browser reports an invalid CSRF token after server restart, login/logout, or an old PWA cache.",
+    "Dùng khi trình duyệt báo CSRF token không hợp lệ sau khi server khởi động lại, đăng nhập/đăng xuất hoặc PWA lưu bản cũ.": "Use this when the browser reports an invalid CSRF token after server restart, login/logout, or an old PWA cache.",
     "Làm mới phiên": "Refresh session",
     "Sẵn sàng.": "Ready.",
     "Chỉnh sửa giao dịch": "Edit transaction",
@@ -322,7 +336,29 @@ const LANGUAGE_TEXT = {
     "Hủy": "Cancel",
     "Đang phân tích...": "Analyzing...",
     "Đang tải...": "Loading...",
-    "Xin chào! Tôi là AI tài chính của bạn. Hãy hỏi tôi về tiết kiệm, chi tiêu, đầu tư, ngân sách hoặc mục tiêu nhé! 💰": "Hello! I am your financial AI. Ask me about savings, spending, investing, budgets, or goals."
+    "Ổn định": "Stable",
+    "Cao": "High",
+    "Thấp": "Low",
+    "Tăng": "Increasing",
+    "Giảm": "Decreasing",
+    "Chưa xác định": "Not determined",
+    "Chưa có ngân sách": "No budget yet",
+    "Còn trong ngân sách": "Within budget",
+    "Vượt ngân sách": "Over budget",
+    "Chưa có dữ liệu": "No data yet",
+    "Không có mục tiêu cần ưu tiên": "No priority goal",
+    "Không đủ dữ liệu": "Not enough data",
+    "Dữ liệu hiện ổn định. Tiếp tục cập nhật giao dịch để AI đưa ra gợi ý chính xác hơn.": "Data looks stable. Keep updating transactions so AI can provide more accurate suggestions.",
+    "Mẹo AI: Theo dõi chi tiêu hàng ngày để tránh vượt ngân sách bất ngờ.": "AI tip: Track daily spending to avoid unexpected budget overruns.",
+    "Gợi ý: Đặt mục tiêu tiết kiệm cụ thể để có động lực tài chính.": "Suggestion: Set a specific savings goal to stay motivated.",
+    "Cảnh báo: Chi tiêu chiếm >80% thu nhập. Hãy lập kế hoạch tiết kiệm khẩn cấp.": "Warning: Spending is above 80% of income. Build an urgent savings plan.",
+    "Đã import file": "File imported",
+    "Đã xóa dữ liệu import": "Imported data deleted",
+    "Đã đăng nhập": "Signed in",
+    "Đã đăng xuất": "Signed out",
+    "Đã tạo tài khoản": "Account created",
+    "Đã restore database thành công. Hãy refresh trang để tải lại dữ liệu.": "Database restored successfully. Refresh the page to reload data.",
+    "Đã nạp dữ liệu mẫu 12 tháng. Dữ liệu thật của bạn không bị xóa.": "Loaded 12-month sample data. Your real data was not deleted."
 };
 
 function translationFor(value) {
@@ -340,6 +376,51 @@ function translationFor(value) {
 
 function translateText(value) {
     return currentLanguage === "en" ? translationFor(value) : value;
+}
+
+function t(viText, enText) {
+    return currentLanguage === "en" ? enText : viText;
+}
+
+const CATEGORY_LABELS_EN = {
+    "Ăn uống": "Food",
+    "Đi lại": "Transport",
+    "Giải trí": "Entertainment",
+    "Hóa đơn": "Bills",
+    "Mua sắm": "Shopping",
+    "Tiết kiệm": "Savings",
+    "Đầu tư": "Investment",
+    "Khác": "Other",
+    "Nhà ở": "Housing",
+    "Sức khỏe": "Health",
+    "Du lịch": "Travel",
+    "Học tập": "Education",
+    "Lương": "Salary",
+};
+
+const NOTE_LABELS_EN = {
+    "Cafe và ăn trưa": "Coffee and lunch",
+    "Du lịch ngắn ngày": "Short trip",
+    "Grab và gửi xe đi làm": "Grab and work parking",
+    "Khám sức khỏe định kỳ": "Routine health check",
+    "Khóa học và sách": "Courses and books",
+    "Lương tháng": "Monthly salary",
+    "Mua thực phẩm siêu thị": "Supermarket groceries",
+    "Mua đồ cá nhân": "Personal shopping",
+    "Netflix và xem phim": "Netflix and movies",
+    "Thưởng dự án": "Project bonus",
+    "Tiền thuê nhà": "Rent payment",
+    "Ăn ngoài cuối tuần": "Weekend dining out",
+    "Điện nước và internet": "Utilities and internet",
+    "Đầu tư ETF định kỳ": "Recurring ETF investment",
+};
+
+function displayCategory(value) {
+    return currentLanguage === "en" ? (CATEGORY_LABELS_EN[value] || value || "") : (value || "");
+}
+
+function displayNote(value) {
+    return currentLanguage === "en" ? (NOTE_LABELS_EN[value] || value || "") : (value || "");
 }
 
 function setElementLanguageText(node) {
@@ -379,15 +460,21 @@ function applyLanguage(root = document.body) {
     }
     languageViBtn?.classList.toggle("active", currentLanguage === "vi");
     languageEnBtn?.classList.toggle("active", currentLanguage === "en");
+    if (languageSelect && languageSelect.value !== currentLanguage) {
+        languageSelect.value = currentLanguage;
+    }
 }
 
 function setLanguage(language) {
-    currentLanguage = language;
-    localStorage.setItem("lux-money-language", language);
+    currentLanguage = language === "en" ? "en" : "vi";
+    localStorage.setItem("lux-money-language", currentLanguage);
     applyLanguage();
+    refreshAiHealthStatus();
+    refreshData();
 }
 
 function initLanguage() {
+    languageSelect?.addEventListener("change", () => setLanguage(languageSelect.value));
     languageViBtn?.addEventListener("click", () => setLanguage("vi"));
     languageEnBtn?.addEventListener("click", () => setLanguage("en"));
     applyLanguage();
@@ -420,7 +507,10 @@ function formatDate(value) {
         return "";
     }
     const [year, month, day] = String(value).split("-");
-    return year && month && day ? `${day}/${month}/${year}` : value;
+    if (!year || !month || !day) {
+        return value;
+    }
+    return currentLanguage === "en" ? `${month}/${day}/${year}` : `${day}/${month}/${year}`;
 }
 
 function activeSource() {
@@ -649,6 +739,7 @@ async function fetchAiInsight() {
     if (filterMonth.value) {
         params.set("month", filterMonth.value);
     }
+    params.set("language", currentLanguage);
     appendSourceParam(params);
     const response = await fetch(`/api/ai-insight?${params.toString()}`);
     const data = await response.json().catch(() => ({}));
@@ -666,7 +757,7 @@ async function askAi(message, history = []) {
     const data = await requestJson("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, history, month: filterMonth.value, scope: aiScope.value, source: activeSource() }),
+        body: JSON.stringify({ message, history, month: filterMonth.value, scope: aiScope.value, source: activeSource(), language: currentLanguage }),
     });
     return data;
 }
@@ -675,7 +766,7 @@ async function fetchAiReport(scope) {
     return requestJson("/api/ai-report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ month: filterMonth.value, scope, source: activeSource() }),
+        body: JSON.stringify({ month: filterMonth.value, scope, source: activeSource(), language: currentLanguage }),
     });
 }
 
@@ -796,8 +887,8 @@ function renderCsvPreview(data) {
                 <td>${item.row}</td>
                 <td>${escapeHtml(formatDate(tx.date))}</td>
                 <td>${escapeHtml(tx.type === "income" ? "Thu" : "Chi")}</td>
-                <td>${escapeHtml(tx.category)}</td>
-                <td>${escapeHtml(tx.note)}</td>
+                <td>${escapeHtml(displayCategory(tx.category))}</td>
+                <td>${escapeHtml(displayNote(tx.note))}</td>
                 <td>${formatCurrency(tx.amount)}</td>
             </tr>
         `;
@@ -810,19 +901,19 @@ function renderCsvPreview(data) {
 
     csvPreview.innerHTML = `
         <div class="csv-preview-header">
-            <strong>Preview ${rows.length}/${data.totalRows || rows.length} dòng</strong>
-            <span>Mapping đã được gợi ý tự động. Định dạng ngày: ${escapeHtml(data.suggestedMapping?.date_order || "auto")}. Có thể chỉnh dropdown rồi bấm “Xem trước” lại.</span>
+            <strong>${t("Xem trước", "Preview")} ${rows.length}/${data.totalRows || rows.length} ${t("dòng", "rows")}</strong>
+            <span>${t("Ánh xạ đã được gợi ý tự động. Định dạng ngày:", "Mapping was suggested automatically. Date format:")} ${escapeHtml(data.suggestedMapping?.date_order || "auto")}. ${t("Có thể chỉnh danh sách chọn rồi bấm “Xem trước” lại.", "Adjust the dropdowns and click Preview again if needed.")}</span>
         </div>
         <div class="csv-preview-table-wrap">
             <table class="csv-preview-table">
                 <thead>
                     <tr>
-                        <th>Dòng</th>
-                        <th>Ngày</th>
-                        <th>Loại</th>
-                        <th>Danh mục</th>
-                        <th>Ghi chú</th>
-                        <th>Số tiền</th>
+                        <th>${t("Dòng", "Row")}</th>
+                        <th>${t("Ngày", "Date")}</th>
+                        <th>${t("Loại", "Type")}</th>
+                        <th>${t("Danh mục", "Category")}</th>
+                        <th>${t("Ghi chú", "Note")}</th>
+                        <th>${t("Số tiền", "Amount")}</th>
                     </tr>
                 </thead>
                 <tbody>${rowHtml}</tbody>
@@ -855,13 +946,13 @@ function renderMonthlyChart(monthlySummary) {
         data: {
             labels,
             datasets: [{
-                label: "Thu nhập",
+                label: t("Thu nhập", "Income"),
                 data: incomeData,
                 borderColor: "#10b981",
                 backgroundColor: "rgba(16, 185, 129, 0.1)",
                 tension: 0.4,
             }, {
-                label: "Chi tiêu",
+                label: t("Chi tiêu", "Expense"),
                 data: expenseData,
                 borderColor: "#ef4444",
                 backgroundColor: "rgba(239, 68, 68, 0.1)",
@@ -897,7 +988,7 @@ function renderMonthlyChart(monthlySummary) {
 function renderCategoryBreakdown(categories) {
     categoryBreakdown.innerHTML = "";
     if (!categories || Object.keys(categories).length === 0) {
-        categoryBreakdown.innerHTML = "<p>Chưa có dữ liệu phân bổ danh mục.</p>";
+        categoryBreakdown.innerHTML = `<p>${t("Chưa có dữ liệu phân bổ danh mục.", "No category breakdown data yet.")}</p>`;
         if (categoryChart) {
             categoryChart.destroy();
             categoryChart = null;
@@ -911,11 +1002,11 @@ function renderCategoryBreakdown(categories) {
         const item = document.createElement("div");
         item.className = "breakdown-item";
         item.innerHTML = `
-            <span>${escapeHtml(category)}</span>
+            <span>${escapeHtml(displayCategory(category))}</span>
             <span>${formatCurrency(amount)}</span>
         `;
         categoryBreakdown.appendChild(item);
-        labels.push(category);
+        labels.push(displayCategory(category));
         values.push(Number(amount || 0));
     });
 
@@ -946,7 +1037,7 @@ function renderCategoryBreakdown(categories) {
 function renderBudgetProgress(items) {
     budgetProgress.innerHTML = "";
     if (!items || items.length === 0) {
-        budgetProgress.innerHTML = "<p>Chưa có ngân sách tháng.</p>";
+        budgetProgress.innerHTML = `<p>${t("Chưa có ngân sách tháng.", "No monthly budget yet.")}</p>`;
         return;
     }
     items.forEach((item) => {
@@ -955,13 +1046,13 @@ function renderBudgetProgress(items) {
         const usedPercent = clampPercent(item.usedPercent);
         wrapper.innerHTML = `
             <div class="budget-header">
-                <span>${escapeHtml(item.category)}</span>
+                <span>${escapeHtml(displayCategory(item.category))}</span>
                 <span>${formatCurrency(item.spent)} / ${formatCurrency(item.budgetAmount)}</span>
             </div>
             <div class="progress-bar">
                 <div class="progress-fill" style="width: ${usedPercent}%"></div>
             </div>
-            <p class="budget-status">${escapeHtml(item.status)} - ${usedPercent}%</p>
+            <p class="budget-status">${escapeHtml(translateText(item.status))} - ${usedPercent}%</p>
         `;
         budgetProgress.appendChild(wrapper);
     });
@@ -971,7 +1062,7 @@ function renderBudgetList(items, progressItems = []) {
     const budgetList = document.getElementById("budget-list");
     budgetList.innerHTML = "";
     if (!items || items.length === 0) {
-        budgetList.innerHTML = "<p>Chưa có ngân sách cho tháng này. Tạo ngân sách theo danh mục, app sẽ tự cập nhật phần đã dùng từ giao dịch.</p>";
+        budgetList.innerHTML = `<p>${t("Chưa có ngân sách cho tháng này. Tạo ngân sách theo danh mục, app sẽ tự cập nhật phần đã dùng từ giao dịch.", "No budget for this month yet. Create category budgets and the app will update spending from transactions automatically.")}</p>`;
         return;
     }
     const progressByKey = new Map(
@@ -988,23 +1079,23 @@ function renderBudgetList(items, progressItems = []) {
         wrapper.className = "budget-item";
         wrapper.innerHTML = `
             <div class="budget-header">
-                <span>${escapeHtml(item.category)}</span>
+                <span>${escapeHtml(displayCategory(item.category))}</span>
                 <span>${formatCurrency(spentValue)} / ${formatCurrency(budgetValue)}</span>
             </div>
             <div class="budget-auto-row">
-                <span>Tháng: ${escapeHtml(item.month)}</span>
-                <span>${escapeHtml(statusText)}</span>
+                <span>${t("Tháng", "Month")}: ${escapeHtml(item.month)}</span>
+                <span>${escapeHtml(translateText(statusText))}</span>
             </div>
             <div class="progress-bar">
                 <div class="progress-fill ${remainingValue < 0 ? "danger-fill" : ""}" style="width: ${usedPercent}%"></div>
             </div>
             <div class="budget-auto-row">
-                <span>Đã dùng từ giao dịch: ${formatCurrency(spentValue)}</span>
-                <span>${remainingValue >= 0 ? "Còn lại" : "Vượt"}: ${formatCurrency(Math.abs(remainingValue))}</span>
+                <span>${t("Đã dùng từ giao dịch", "Used from transactions")}: ${formatCurrency(spentValue)}</span>
+                <span>${remainingValue >= 0 ? t("Còn lại", "Remaining") : t("Vượt", "Over")}: ${formatCurrency(Math.abs(remainingValue))}</span>
             </div>
             <div class="transaction-actions">
-                <button class="edit-button" data-id="${item.id}">Sửa</button>
-                <button class="delete-button" data-id="${item.id}">Xóa ngân sách</button>
+                <button class="edit-button" data-id="${item.id}">${t("Sửa", "Edit")}</button>
+                <button class="delete-button" data-id="${item.id}">${t("Xóa ngân sách", "Delete budget")}</button>
             </div>
         `;
         wrapper.querySelector(".edit-button").addEventListener("click", () => startEditBudget(item));
@@ -1013,7 +1104,7 @@ function renderBudgetList(items, progressItems = []) {
                 await deleteBudget(item.id);
                 await refreshData();
             } catch (error) {
-                alert(error.message || "Xóa ngân sách thất bại. Vui lòng thử lại.");
+                alert(error.message || t("Xóa ngân sách thất bại. Vui lòng thử lại.", "Could not delete the budget. Please try again."));
             }
         });
         budgetList.appendChild(wrapper);
@@ -1023,7 +1114,7 @@ function renderBudgetList(items, progressItems = []) {
 function renderGoals(items) {
     goalsList.innerHTML = "";
     if (!items || items.length === 0) {
-        goalsList.innerHTML = "<p>Chưa có mục tiêu tiết kiệm.</p>";
+        goalsList.innerHTML = `<p>${t("Chưa có mục tiêu tiết kiệm.", "No savings goals yet.")}</p>`;
         return;
     }
     items.forEach((item) => {
@@ -1038,8 +1129,8 @@ function renderGoals(items) {
             <div class="progress-bar">
                 <div class="progress-fill goal-fill" style="width: ${progressPercent}%"></div>
             </div>
-            <p>${formatCurrency(item.savedAmount)} / ${formatCurrency(item.targetAmount)} • Hạn: ${escapeHtml(item.deadline)}</p>
-            <button class="delete-button" data-id="${item.id}">Xóa mục tiêu</button>
+            <p>${formatCurrency(item.savedAmount)} / ${formatCurrency(item.targetAmount)} - ${t("Hạn", "Deadline")}: ${escapeHtml(item.deadline)}</p>
+            <button class="delete-button" data-id="${item.id}">${t("Xóa mục tiêu", "Delete goal")}</button>
         `;
         const deleteBtn = wrapper.querySelector(".delete-button");
         deleteBtn.addEventListener("click", async () => {
@@ -1047,7 +1138,7 @@ function renderGoals(items) {
                 await deleteGoal(item.id);
                 await refreshData();
             } catch (error) {
-                alert(error.message || "Xóa mục tiêu thất bại. Vui lòng thử lại.");
+                alert(error.message || t("Xóa mục tiêu thất bại. Vui lòng thử lại.", "Could not delete the goal. Please try again."));
             }
         });
         goalsList.appendChild(wrapper);
@@ -1057,12 +1148,12 @@ function renderGoals(items) {
 function renderOptimizationPlan(optimization) {
     optimizationPlan.innerHTML = "";
     if (!optimization) {
-        optimizationPlan.innerHTML = "<p>Không có dữ liệu tối ưu hóa.</p>";
+        optimizationPlan.innerHTML = `<p>${t("Không có dữ liệu tối ưu hóa.", "No optimization data available.")}</p>`;
         return;
     }
     const actions = document.createElement("div");
     actions.className = "optimization-actions";
-    actions.innerHTML = `<h3>Hành động đề xuất</h3>`;
+    actions.innerHTML = `<h3>${t("Hành động đề xuất", "Recommended actions")}</h3>`;
     optimization.actions.forEach((line) => {
         const p = document.createElement("p");
         p.textContent = line;
@@ -1072,26 +1163,26 @@ function renderOptimizationPlan(optimization) {
     const summary = document.createElement("div");
     summary.className = "optimization-summary";
     summary.innerHTML = `
-        <p><strong>Dư khả dụng hàng tháng:</strong> ${formatCurrency(optimization.availableSavings)}</p>
+        <p><strong>${t("Dư khả dụng hàng tháng:", "Monthly available surplus:")}</strong> ${formatCurrency(optimization.availableSavings)}</p>
     `;
 
     const topList = document.createElement("div");
     topList.className = "optimization-block";
-    topList.innerHTML = `<h4>Top chi phí lớn</h4>`;
+    topList.innerHTML = `<h4>${t("Top chi phí lớn", "Largest expenses")}</h4>`;
     optimization.topExpenseCategories.forEach((item) => {
         const row = document.createElement("div");
         row.className = "optimization-row";
-        row.innerHTML = `<span>${escapeHtml(item.category)}</span><span>${formatCurrency(item.amount)}</span><p>${escapeHtml(item.suggestion)}</p>`;
+        row.innerHTML = `<span>${escapeHtml(displayCategory(item.category))}</span><span>${formatCurrency(item.amount)}</span><p>${escapeHtml(currentLanguage === "en" ? translateText(item.suggestion) : item.suggestion)}</p>`;
         topList.appendChild(row);
     });
 
     const goalList = document.createElement("div");
     goalList.className = "optimization-block";
-    goalList.innerHTML = `<h4>Kế hoạch mục tiêu</h4>`;
+    goalList.innerHTML = `<h4>${t("Kế hoạch mục tiêu", "Goal plan")}</h4>`;
     optimization.goalAllocation.forEach((item) => {
         const row = document.createElement("div");
         row.className = "optimization-row";
-        row.innerHTML = `<span>${escapeHtml(item.goal)}</span><span>${formatCurrency(item.recommendedMonthly)}</span><p>${escapeHtml(item.note)}</p>`;
+        row.innerHTML = `<span>${escapeHtml(item.goal)}</span><span>${formatCurrency(item.recommendedMonthly)}</span><p>${escapeHtml(currentLanguage === "en" ? translateText(item.note) : item.note)}</p>`;
         goalList.appendChild(row);
     });
 
@@ -1104,55 +1195,57 @@ function renderOptimizationPlan(optimization) {
 function renderAIMetrics(summary) {
     if (!summary) {
         aiScoreValue.textContent = "--";
-        riskLevelValue.textContent = "Đang tải...";
+        riskLevelValue.textContent = t("Đang tải...", "Loading...");
         healthIndexValue.textContent = "--";
         budgetAdherenceValue.textContent = "--";
         return;
     }
     aiScoreValue.textContent = summary.aiScore || 0;
-    riskLevelValue.textContent = summary.riskLevel || "Ổn định";
+    riskLevelValue.textContent = translateText(summary.riskLevel || "Ổn định");
     healthIndexValue.textContent = summary.healthIndex ? `${summary.healthIndex} / 100` : "--";
-    budgetAdherenceValue.textContent = summary.budgetAdherenceText || "Chưa có ngân sách";
+    budgetAdherenceValue.textContent = translateText(summary.budgetAdherenceText || "Chưa có ngân sách");
 }
 
 function renderFinancialStrategy(summary) {
     if (!summary) {
-        financialStyleValue.textContent = "Đang tải...";
-        spendingTargetValue.textContent = "Đang tải...";
-        savingsVelocityValue.textContent = "Đang tải...";
-        priorityGoalValue.textContent = "Đang tải...";
-        financialBlueprintText.textContent = "Đang phân tích bản đồ tài chính...";
-        goalSuggestionList.innerHTML = "<li>Đang tải...</li>";
+        financialStyleValue.textContent = t("Đang tải...", "Loading...");
+        spendingTargetValue.textContent = t("Đang tải...", "Loading...");
+        savingsVelocityValue.textContent = t("Đang tải...", "Loading...");
+        priorityGoalValue.textContent = t("Đang tải...", "Loading...");
+        financialBlueprintText.textContent = t("Đang phân tích bản đồ tài chính...", "Analyzing your financial blueprint...");
+        goalSuggestionList.innerHTML = `<li>${t("Đang tải...", "Loading...")}</li>`;
         return;
     }
 
-    financialStyleValue.textContent = summary.financialStyle || "Chưa xác định";
-    spendingTargetValue.textContent = summary.recommendedExpenseCap ? formatCurrency(summary.recommendedExpenseCap) : "Chưa có dữ liệu";
+    financialStyleValue.textContent = translateText(summary.financialStyle || "Chưa xác định");
+    spendingTargetValue.textContent = summary.recommendedExpenseCap ? formatCurrency(summary.recommendedExpenseCap) : t("Chưa có dữ liệu", "No data yet");
     if (summary.monthlySavings || summary.recommendedSavingsGoal) {
         savingsVelocityValue.textContent = `${formatCurrency(summary.monthlySavings)} / ${formatCurrency(summary.recommendedSavingsGoal)}`;
     } else {
-        savingsVelocityValue.textContent = "Chưa có dòng tiền dương";
+        savingsVelocityValue.textContent = t("Chưa có dòng tiền dương", "No positive cash flow yet");
     }
-    priorityGoalValue.textContent = summary.priorityGoal || "Không có mục tiêu cần ưu tiên";
-    financialBlueprintText.textContent = summary.financialBlueprint?.join(" ") || "Thêm giao dịch để nhận bản đồ tài chính.";
+    priorityGoalValue.textContent = translateText(summary.priorityGoal || "Không có mục tiêu cần ưu tiên");
+    financialBlueprintText.textContent = currentLanguage === "en"
+        ? "Add transactions to receive a financial blueprint."
+        : summary.financialBlueprint?.join(" ") || "Thêm giao dịch để nhận bản đồ tài chính.";
 
     goalSuggestionList.innerHTML = "";
     if (summary.goalRecommendations && summary.goalRecommendations.length > 0) {
         summary.goalRecommendations.forEach((advice) => {
             const item = document.createElement("li");
-            item.textContent = advice;
+            item.textContent = currentLanguage === "en" ? translateText(advice) : advice;
             goalSuggestionList.appendChild(item);
         });
     } else {
-        goalSuggestionList.innerHTML = "<li>Chưa có đề xuất mục tiêu chi tiêu cụ thể.</li>";
+        goalSuggestionList.innerHTML = `<li>${t("Chưa có đề xuất mục tiêu chi tiêu cụ thể.", "No specific goal suggestions yet.")}</li>`;
     }
 }
 
 function renderVipInsights(summary, dashboard) {
     vipInsightsList.innerHTML = "";
     if (!summary) {
-        vipInsightsList.innerHTML = "<li>Đang tải phân tích VIP...</li>";
-        vipInsightText.textContent = "Đang phân tích dữ liệu tài chính...";
+        vipInsightsList.innerHTML = `<li>${t("Đang tải phân tích VIP...", "Loading VIP analysis...")}</li>`;
+        vipInsightText.textContent = t("Đang phân tích dữ liệu tài chính...", "Analyzing financial data...");
         return;
     }
 
@@ -1163,31 +1256,31 @@ function renderVipInsights(summary, dashboard) {
     const comparison = dashboard?.comparison || {};
     const recurring = dashboard?.recurringTransactions || [];
     const topCategoryText = topCategory
-        ? `${topCategory.category} đang dẫn đầu với ${formatCurrency(topCategory.total)}.`
-        : "Chưa đủ dữ liệu danh mục.";
-    const riskLabel = summary.riskLevel || (savingsRate < 10 ? "Cao" : savingsRate < 20 ? "Trung bình" : "Thấp");
+        ? t(`${topCategory.category} đang dẫn đầu với ${formatCurrency(topCategory.total)}.`, `${displayCategory(topCategory.category)} leads spending with ${formatCurrency(topCategory.total)}.`)
+        : t("Chưa đủ dữ liệu danh mục.", "Not enough category data yet.");
+    const riskLabel = translateText(summary.riskLevel || (savingsRate < 10 ? "Cao" : savingsRate < 20 ? "Trung bình" : "Thấp"));
     const monthlyRunway = summary.expense > 0 ? Math.max(1, Math.round(summary.balance / Math.max(summary.expense, 1) * 30)) : 0;
 
     vipInsightText.textContent = summary.income > 0
-        ? `Tháng ${dashboard?.month || filterMonth.value}, dòng tiền ròng ${formatCurrency(summary.balance)}, tỷ lệ tiết kiệm ${Number(savingsRate).toFixed(1)}%. ${topCategoryText}`
-        : "Chưa có dữ liệu đủ mạnh. Bấm “Nạp dữ liệu mẫu 12 tháng” để xem dashboard và AI Insight đầy đủ.";
+        ? t(`Tháng ${dashboard?.month || filterMonth.value}, dòng tiền ròng ${formatCurrency(summary.balance)}, tỷ lệ tiết kiệm ${Number(savingsRate).toFixed(1)}%. ${topCategoryText}`, `Month ${dashboard?.month || filterMonth.value}: net cash flow ${formatCurrency(summary.balance)}, saving rate ${Number(savingsRate).toFixed(1)}%. ${topCategoryText}`)
+        : t("Chưa có dữ liệu đủ mạnh. Bấm “Nạp dữ liệu mẫu 12 tháng” để xem bảng điều khiển và phân tích AI đầy đủ.", "Not enough data yet. Click Load 12-month sample data to see the full dashboard and AI insights.");
 
-    vipRunwayValue.textContent = summary.expense > 0 ? `${monthlyRunway} ngày` : "--";
-    vipFocusValue.textContent = topCategory ? topCategory.category : "Data";
+    vipRunwayValue.textContent = summary.expense > 0 ? t(`${monthlyRunway} ngày`, `${monthlyRunway} days`) : "--";
+    vipFocusValue.textContent = topCategory ? displayCategory(topCategory.category) : t("Dữ liệu", "Data");
     vipRiskValue.textContent = riskLabel;
 
     const overspentCategoryTips = summary.topOverspentCategories || [];
     const insights = [
-        `Executive pulse: ${trendTooltip.toLowerCase()}, VIP score ${summary.aiScore || 0}/100, risk ${riskLabel}.`,
-        `Savings rate: ${Number(savingsRate).toFixed(1)}%. ${savingsRate >= 20 ? "Có dư địa tốt để tăng đầu tư hoặc quỹ khẩn cấp." : "Nên đặt trần chi tiêu tuần cho danh mục lớn nhất."}`,
-        `Category watch: ${topCategoryText}`,
-        biggestExpense ? `Biggest transaction: ${biggestExpense.note} (${formatCurrency(biggestExpense.amount)}).` : "Biggest transaction: chưa có dữ liệu chi tiêu tháng này.",
-        comparison.expenseChange !== undefined ? `Month-over-month expense delta: ${formatCurrency(comparison.expenseChange)} so với ${comparison.previousMonth}.` : "Month-over-month: cần thêm dữ liệu tháng trước.",
+        t(`Nhịp tài chính: ${trendTooltip.toLowerCase()}, điểm VIP ${summary.aiScore || 0}/100, rủi ro ${riskLabel}.`, `Executive pulse: ${translateText(trendTooltip).toLowerCase()}, VIP score ${summary.aiScore || 0}/100, risk ${riskLabel}.`),
+        t(`Tỷ lệ tiết kiệm: ${Number(savingsRate).toFixed(1)}%. ${savingsRate >= 20 ? "Có dư địa tốt để tăng đầu tư hoặc quỹ khẩn cấp." : "Nên đặt trần chi tiêu tuần cho danh mục lớn nhất."}`, `Saving rate: ${Number(savingsRate).toFixed(1)}%. ${savingsRate >= 20 ? "There is room to increase investing or emergency savings." : "Set a weekly cap for the largest spending category."}`),
+        t(`Theo dõi danh mục: ${topCategoryText}`, `Category watch: ${topCategoryText}`),
+        biggestExpense ? t(`Giao dịch lớn nhất: ${biggestExpense.note} (${formatCurrency(biggestExpense.amount)}).`, `Biggest transaction: ${displayNote(biggestExpense.note)} (${formatCurrency(biggestExpense.amount)}).`) : t("Giao dịch lớn nhất: chưa có dữ liệu chi tiêu tháng này.", "Biggest transaction: no expense data this month yet."),
+        comparison.expenseChange !== undefined ? t(`Chênh lệch chi tiêu so với ${comparison.previousMonth}: ${formatCurrency(comparison.expenseChange)}.`, `Month-over-month expense delta: ${formatCurrency(comparison.expenseChange)} versus ${comparison.previousMonth}.`) : t("So với tháng trước: cần thêm dữ liệu tháng trước.", "Month-over-month: more previous-month data is needed."),
     ];
     if (recurring.length) {
-        insights.push(`Recurring radar: ${recurring.slice(0, 3).map((item) => item.note).join(", ")}.`);
+        insights.push(t(`Khoản định kỳ: ${recurring.slice(0, 3).map((item) => item.note).join(", ")}.`, `Recurring radar: ${recurring.slice(0, 3).map((item) => displayNote(item.note)).join(", ")}.`));
     }
-    overspentCategoryTips.forEach((tip) => insights.push(`Budget alert: ${tip}`));
+    overspentCategoryTips.forEach((tip) => insights.push(t(`Cảnh báo ngân sách: ${tip}`, `Budget alert: ${tip}`)));
 
     insights.forEach((text) => {
         const item = document.createElement("li");
@@ -1200,7 +1293,7 @@ function renderAnalytics12m(analytics) {
     const summary = analytics?.summary || {};
     analyticsSummary.innerHTML = "";
     if (!analytics?.monthly?.length) {
-        analyticsSummary.innerHTML = "<div class=\"empty-state compact-empty\">Chưa đủ dữ liệu 12 tháng để phân tích.</div>";
+        analyticsSummary.innerHTML = `<div class="empty-state compact-empty">${t("Chưa đủ dữ liệu 12 tháng để phân tích.", "Not enough 12-month data to analyze yet.")}</div>`;
         if (analyticsComparison) {
             analyticsComparison.innerHTML = "";
         }
@@ -1219,12 +1312,12 @@ function renderAnalytics12m(analytics) {
     }
 
     const cards = [
-        ["Tổng thu", formatCurrency(summary.totalIncome)],
-        ["Tổng chi", formatCurrency(summary.totalExpense)],
-        ["Dòng tiền ròng", formatCurrency(summary.totalCashFlow)],
-        ["Chi TB/tháng", formatCurrency(summary.averageMonthlyExpense)],
-        ["Savings rate TB", `${Number(summary.averageSavingsRate || 0).toFixed(1)}%`],
-        ["Tháng chi cao nhất", summary.highestExpenseMonth ? `${summary.highestExpenseMonth.month} · ${formatCurrency(summary.highestExpenseMonth.total_expense)}` : "--"],
+        [t("Tổng thu", "Total income"), formatCurrency(summary.totalIncome)],
+        [t("Tổng chi", "Total expense"), formatCurrency(summary.totalExpense)],
+        [t("Dòng tiền ròng", "Net cash flow"), formatCurrency(summary.totalCashFlow)],
+        [t("Chi TB/tháng", "Avg. monthly expense"), formatCurrency(summary.averageMonthlyExpense)],
+        [t("Tỷ lệ tiết kiệm TB", "Avg. saving rate"), `${Number(summary.averageSavingsRate || 0).toFixed(1)}%`],
+        [t("Tháng chi cao nhất", "Highest expense month"), summary.highestExpenseMonth ? `${summary.highestExpenseMonth.month} - ${formatCurrency(summary.highestExpenseMonth.total_expense)}` : "--"],
     ];
     cards.forEach(([label, value]) => {
         const item = document.createElement("div");
@@ -1240,15 +1333,15 @@ function renderAnalytics12m(analytics) {
         const cashFlowDelta = Number(compare.cashFlowDelta || 0);
         analyticsComparison.innerHTML = `
             <div class="comparison-row ${expenseDelta <= 0 ? "positive" : "negative"}">
-                <span>Chi tiêu</span>
-                <strong>${expenseDelta <= 0 ? "Thấp hơn" : "Cao hơn"} ${formatCurrency(Math.abs(expenseDelta))}</strong>
+                <span>${t("Chi tiêu", "Expense")}</span>
+                <strong>${expenseDelta <= 0 ? t("Thấp hơn", "Lower by") : t("Cao hơn", "Higher by")} ${formatCurrency(Math.abs(expenseDelta))}</strong>
             </div>
             <div class="comparison-row ${cashFlowDelta >= 0 ? "positive" : "negative"}">
-                <span>Dòng tiền</span>
+                <span>${t("Dòng tiền", "Cash flow")}</span>
                 <strong>${cashFlowDelta >= 0 ? "+" : "-"}${formatCurrency(Math.abs(cashFlowDelta))}</strong>
             </div>
             <div class="comparison-row ${savingsRateDelta >= 0 ? "positive" : "negative"}">
-                <span>Savings rate</span>
+                <span>${t("Tỷ lệ tiết kiệm", "Saving rate")}</span>
                 <strong>${savingsRateDelta >= 0 ? "+" : ""}${savingsRateDelta.toFixed(1)}%</strong>
             </div>
         `;
@@ -1277,14 +1370,14 @@ function renderAnalytics12m(analytics) {
             labels,
             datasets: [{
                 type: "bar",
-                label: "Dòng tiền ròng",
+                label: t("Dòng tiền ròng", "Net cash flow"),
                 data: cashFlow,
                 backgroundColor: cashFlow.map((value) => value >= 0 ? "rgba(34, 197, 94, 0.65)" : "rgba(239, 68, 68, 0.65)"),
                 borderRadius: 8,
                 yAxisID: "y",
             }, {
                 type: "line",
-                label: "Savings rate %",
+                label: t("Tỷ lệ tiết kiệm %", "Saving rate %"),
                 data: savingsRate,
                 borderColor: "#3b82f6",
                 backgroundColor: "rgba(59, 130, 246, 0.12)",
@@ -1323,7 +1416,7 @@ function renderAnalytics12m(analytics) {
             data: {
                 labels,
                 datasets: trendItems.map((item, index) => ({
-                    label: item.category,
+                    label: displayCategory(item.category),
                     data: (item.values || []).map((value) => Number(value || 0)),
                     borderColor: trendPalette[index % trendPalette.length],
                     backgroundColor: `${trendPalette[index % trendPalette.length]}22`,
@@ -1352,7 +1445,7 @@ function renderAnalytics12m(analytics) {
 function renderBudgetSuggestions(items) {
     budgetSuggestions.innerHTML = "";
     if (!items || items.length === 0) {
-        budgetSuggestions.innerHTML = "<p class=\"empty-state\">Chưa đủ dữ liệu để gợi ý ngân sách. Hãy thêm giao dịch trong vài tháng.</p>";
+        budgetSuggestions.innerHTML = `<p class="empty-state">${t("Chưa đủ dữ liệu để gợi ý ngân sách. Hãy thêm giao dịch trong vài tháng.", "Not enough data for budget suggestions yet. Add transactions for a few months.")}</p>`;
         return;
     }
     items.slice(0, 6).forEach((item) => {
@@ -1360,25 +1453,25 @@ function renderBudgetSuggestions(items) {
         wrapper.className = "budget-item suggestion-item";
         wrapper.innerHTML = `
             <div class="budget-header">
-                <span>${escapeHtml(item.category)}</span>
+                <span>${escapeHtml(displayCategory(item.category))}</span>
                 <span>${formatCurrency(item.suggestedAmount)}</span>
             </div>
             <div class="budget-auto-row">
-                <span>Trung bình: ${formatCurrency(item.averageExpense)}</span>
-                <span>Xu hướng: ${escapeHtml(item.trend)}</span>
+                <span>${t("Trung bình", "Average")}: ${formatCurrency(item.averageExpense)}</span>
+                <span>${t("Xu hướng", "Trend")}: ${escapeHtml(translateText(item.trend))}</span>
             </div>
             <div class="budget-auto-row">
-                <span>Ngân sách hiện tại: ${item.currentBudget === null ? "Chưa có" : formatCurrency(item.currentBudget)}</span>
-                <span>Dựa trên ${item.basisMonths} tháng</span>
+                <span>${t("Ngân sách hiện tại", "Current budget")}: ${item.currentBudget === null ? t("Chưa có", "None") : formatCurrency(item.currentBudget)}</span>
+                <span>${t(`Dựa trên ${item.basisMonths} tháng`, `Based on ${item.basisMonths} months`)}</span>
             </div>
-            <button class="secondary-button apply-suggestion">Dùng gợi ý này</button>
+            <button class="secondary-button apply-suggestion">${t("Dùng gợi ý này", "Use this suggestion")}</button>
         `;
         wrapper.querySelector(".apply-suggestion").addEventListener("click", () => {
             editingBudgetId = null;
             budgetCategory.value = item.category;
             budgetAmount.value = item.suggestedAmount;
             budgetMonth.value = item.targetMonth;
-            budgetSubmit.textContent = "Lưu ngân sách";
+            budgetSubmit.textContent = t("Lưu ngân sách", "Save budget");
             cancelEditBudgetBtn.classList.add("hidden");
             switchTab("budgets");
             budgetCategory.focus();
@@ -1395,14 +1488,14 @@ function renderRecurringTransactions(data) {
     const activeCount = items.filter((item) => item.status !== "ignored").length;
     recurringSummary.innerHTML = `
         <div class="recurring-summary-card">
-            <span>Dự kiến mỗi tháng</span>
+            <span>${t("Dự kiến mỗi tháng", "Estimated monthly")}</span>
             <strong>${formatCurrency(data?.totalEstimatedMonthly || 0)}</strong>
-            <small>${activeCount} khoản đang theo dõi · ${items.length - activeCount} khoản đã bỏ qua</small>
+            <small>${t(`${activeCount} khoản đang theo dõi - ${items.length - activeCount} khoản đã bỏ qua`, `${activeCount} tracked - ${items.length - activeCount} ignored`)}</small>
         </div>
         <div class="recurring-summary-card">
-            <span>Kỳ dự báo</span>
+            <span>${t("Kỳ dự báo", "Forecast period")}</span>
             <strong>${escapeHtml(data?.nextMonth || "--")}</strong>
-            <small>Dựa trên lịch sử giao dịch hiện có</small>
+            <small>${t("Dựa trên lịch sử giao dịch hiện có", "Based on available transaction history")}</small>
         </div>
     `;
 
@@ -1410,8 +1503,8 @@ function renderRecurringTransactions(data) {
     if (!items.length) {
         recurringList.innerHTML = `
             <div class="empty-state">
-                <strong>Chưa phát hiện khoản định kỳ.</strong>
-                <p>Khi có ít nhất hai giao dịch giống nhau ở nhiều tháng, app sẽ tự gợi ý tại đây.</p>
+                <strong>${t("Chưa phát hiện khoản định kỳ.", "No recurring items detected yet.")}</strong>
+                <p>${t("Khi có ít nhất hai giao dịch giống nhau ở nhiều tháng, app sẽ tự gợi ý tại đây.", "When at least two similar transactions appear across months, the app will suggest them here.")}</p>
             </div>
         `;
         return;
@@ -1423,14 +1516,14 @@ function renderRecurringTransactions(data) {
         card.innerHTML = `
             <div class="recurring-card-top">
                 <span class="metric-pill">${escapeHtml(item.status === "confirmed" ? "OK" : item.status === "ignored" ? "SKIP" : "AUTO")}</span>
-                <strong>${escapeHtml(item.note)}</strong>
+                <strong>${escapeHtml(displayNote(item.note))}</strong>
             </div>
-            <p>${escapeHtml(item.category)} • ${item.occurrences} lần ghi nhận</p>
+            <p>${escapeHtml(displayCategory(item.category))} - ${t(`${item.occurrences} lần ghi nhận`, `${item.occurrences} records`)}</p>
             <div class="recurring-amount">${formatCurrency(item.estimatedAmount)}</div>
-            <small>Các tháng gần đây: ${escapeHtml((item.months || []).join(", "))}</small>
+            <small>${t("Các tháng gần đây", "Recent months")}: ${escapeHtml((item.months || []).join(", "))}</small>
             <div class="recurring-actions">
-                <button class="secondary-button confirm-recurring">Xác nhận</button>
-                <button class="secondary-button ignore-recurring">Bỏ qua</button>
+                <button class="secondary-button confirm-recurring">${t("Xác nhận", "Confirm")}</button>
+                <button class="secondary-button ignore-recurring">${t("Bỏ qua", "Ignore")}</button>
             </div>
         `;
         card.querySelector(".confirm-recurring").addEventListener("click", () => updateRecurringRule(item, "confirmed"));
@@ -1460,12 +1553,12 @@ async function refreshAuthStatus() {
     try {
         const status = await fetchAuthStatus();
         if (status.authenticated) {
-            authStatus.textContent = `Đang đăng nhập: ${status.user.name} (${status.user.email})${status.user.isAdmin ? " · Admin" : ""}. Giao dịch mới sẽ gắn với tài khoản này.`;
+            authStatus.textContent = t(`Đang đăng nhập: ${status.user.name} (${status.user.email})${status.user.isAdmin ? " - Admin" : ""}. Giao dịch mới sẽ gắn với tài khoản này.`, `Signed in: ${status.user.name} (${status.user.email})${status.user.isAdmin ? " - Admin" : ""}. New transactions will be linked to this account.`);
             authLogoutBtn.disabled = false;
         } else {
             authStatus.textContent = status.userCount > 0
-                ? "Chưa đăng nhập. Bạn vẫn có thể dùng app local, nhưng dữ liệu mới không gắn với user."
-                : "Chưa có tài khoản local. Tạo tài khoản nếu muốn gắn dữ liệu mới với user.";
+                ? t("Chưa đăng nhập. Bạn vẫn có thể dùng app local, nhưng dữ liệu mới không gắn với user.", "Not signed in. You can still use the local app, but new data will not be linked to a user.")
+                : t("Chưa có tài khoản local. Tạo tài khoản nếu muốn gắn dữ liệu mới với user.", "No local account yet. Create one if you want new data linked to a user.");
             authLogoutBtn.disabled = true;
         }
         const canManageDb = Boolean(status.authenticated && status.user?.isAdmin);
@@ -1474,12 +1567,12 @@ async function refreshAuthStatus() {
             restoreSubmitBtn.disabled = !canManageDb;
         }
         if (!canManageDb && dataStatus) {
-            dataStatus.textContent = "Backup/restore DB chỉ dành cho admin. Thiết lập ADMIN_EMAILS rồi đăng nhập bằng email admin để dùng.";
+            dataStatus.textContent = t("Backup/restore DB chỉ dành cho admin. Thiết lập ADMIN_EMAILS rồi đăng nhập bằng email admin để dùng.", "DB backup/restore is admin-only. Set ADMIN_EMAILS and sign in with an admin email to use it.");
         } else if (dataStatus && dataStatus.textContent.includes("chỉ dành cho admin")) {
-            dataStatus.textContent = "Sẵn sàng thao tác dữ liệu.";
+            dataStatus.textContent = t("Sẵn sàng thao tác dữ liệu.", "Ready for data actions.");
         }
     } catch (error) {
-        authStatus.textContent = error.message || "Không thể kiểm tra tài khoản.";
+        authStatus.textContent = error.message || t("Không thể kiểm tra tài khoản.", "Could not check the account.");
     }
 }
 
@@ -1490,8 +1583,8 @@ function refreshPwaStatus() {
     const swSupported = "serviceWorker" in navigator;
     const standalone = window.matchMedia?.("(display-mode: standalone)").matches;
     pwaStatus.textContent = swSupported
-        ? standalone ? "Đang chạy ở chế độ app/PWA." : "Trình duyệt hỗ trợ PWA. Có thể dùng Install app nếu trình duyệt hiển thị."
-        : "Trình duyệt này chưa hỗ trợ service worker/PWA.";
+        ? standalone ? t("Đang chạy ở chế độ app/PWA.", "Running in app/PWA mode.") : t("Trình duyệt hỗ trợ PWA. Có thể dùng Install app nếu trình duyệt hiển thị.", "This browser supports PWA. Use Install app if the browser shows it.")
+        : t("Trình duyệt này chưa hỗ trợ service worker/PWA.", "This browser does not support service workers/PWA.");
 }
 
 async function refreshAiHealthStatus() {
@@ -1501,11 +1594,11 @@ async function refreshAiHealthStatus() {
     try {
         const health = await fetchHealthStatus();
         const mode = health.openai?.configured && health.openai?.sdkAvailable
-            ? `OpenAI cloud sẵn sàng (${health.openai.model})`
-            : "Đang dùng AI local fallback vì chưa có OPENAI_API_KEY hoặc SDK.";
+            ? t(`OpenAI cloud sẵn sàng (${health.openai.model})`, `OpenAI cloud is ready (${health.openai.model})`)
+            : t("Đang dùng AI local fallback vì chưa có OPENAI_API_KEY hoặc SDK.", "Using local AI fallback because OPENAI_API_KEY or SDK is missing.");
         aiHealthStatus.textContent = mode;
     } catch (error) {
-        aiHealthStatus.textContent = error.message || "Không thể kiểm tra trạng thái AI.";
+        aiHealthStatus.textContent = error.message || t("Không thể kiểm tra trạng thái AI.", "Could not check AI status.");
     }
 }
 
@@ -1538,8 +1631,8 @@ function renderAiInsight(insight) {
     if (!allItems.length) {
         aiInsightResult.innerHTML = `
             <div class="empty-state compact-empty">
-                <strong>Chưa đủ dữ liệu để AI phân tích.</strong>
-                <p>Thêm vài giao dịch thu/chi trong tháng đang xem hoặc bấm nạp dữ liệu mẫu 12 tháng để xem cách hoạt động.</p>
+                <strong>${t("Chưa đủ dữ liệu để AI phân tích.", "Not enough data for AI analysis yet.")}</strong>
+                <p>${t("Thêm vài giao dịch thu/chi trong tháng đang xem hoặc bấm nạp dữ liệu mẫu 12 tháng để xem cách hoạt động.", "Add a few income/expense transactions for the selected month or load 12-month sample data to see how it works.")}</p>
             </div>
         `;
         return;
@@ -1547,16 +1640,16 @@ function renderAiInsight(insight) {
     const hero = document.createElement("div");
     hero.className = "insight-hero";
     hero.innerHTML = `
-        <span>AI brief ${escapeHtml(insight.month || filterMonth.value || "")}</span>
-        <strong>${escapeHtml((insight.spending_insights || [])[1] || (insight.spending_insights || [])[0] || "Phân tích dữ liệu tháng đang chọn.")}</strong>
-        <small>${escapeHtml(insight.source === "openai" ? "OpenAI" : "Local fallback")}</small>
+        <span>${t("Tóm tắt AI", "AI brief")} ${escapeHtml(insight.month || filterMonth.value || "")}</span>
+        <strong>${escapeHtml((insight.spending_insights || [])[1] || (insight.spending_insights || [])[0] || t("Phân tích dữ liệu tháng đang chọn.", "Analysis for the selected month."))}</strong>
+        <small>${escapeHtml(insight.source === "openai" ? "OpenAI" : t("Dự phòng cục bộ", "Local fallback"))}</small>
     `;
     aiInsightResult.appendChild(hero);
 
     const sections = [
-        ["Tổng quan", insight.spending_insights || []],
-        ["Mẫu chi tiêu", insight.patterns || []],
-        ["Hành động nên làm", insight.suggestions || []],
+        [t("Tổng quan", "Overview"), insight.spending_insights || []],
+        [t("Mẫu chi tiêu", "Spending patterns"), insight.patterns || []],
+        [t("Hành động nên làm", "Recommended actions"), insight.suggestions || []],
     ];
     sections.forEach(([title, items]) => {
         const card = document.createElement("div");
@@ -1566,7 +1659,7 @@ function renderAiInsight(insight) {
         const list = document.createElement("ul");
         if (items.length === 0) {
             const item = document.createElement("li");
-            item.textContent = "Chưa có dữ liệu.";
+            item.textContent = t("Chưa có dữ liệu.", "No data yet.");
             list.appendChild(item);
         } else {
             items.forEach((text) => {
@@ -1592,13 +1685,13 @@ function renderAiReport(report) {
         </div>
     `;
     wrapper.innerHTML = `
-        <span class="report-scope">${escapeHtml(report.scope === "year" ? "12 tháng" : report.month)}</span>
+        <span class="report-scope">${escapeHtml(report.scope === "year" ? t("12 tháng", "12 months") : report.month)}</span>
         <h3>${escapeHtml(report.title)}</h3>
         <p>${escapeHtml(report.overview)}</p>
         <div class="report-grid">
-            ${list("Rủi ro", report.risks)}
-            ${list("Cơ hội", report.opportunities)}
-            ${list("Hành động", report.actions)}
+            ${list(t("Rủi ro", "Risks"), report.risks)}
+            ${list(t("Cơ hội", "Opportunities"), report.opportunities)}
+            ${list(t("Hành động", "Actions"), report.actions)}
         </div>
     `;
     aiInsightResult.appendChild(wrapper);
@@ -1607,13 +1700,13 @@ function renderAiReport(report) {
 async function generateAiReport(scope) {
     const button = scope === "year" ? generateYearReportBtn : generateMonthReportBtn;
     button.disabled = true;
-    aiInsightStatus.textContent = scope === "year" ? "Đang tạo report 12 tháng..." : "Đang tạo report tháng...";
+    aiInsightStatus.textContent = scope === "year" ? t("Đang tạo report 12 tháng...", "Generating 12-month report...") : t("Đang tạo report tháng...", "Generating monthly report...");
     try {
         const report = await fetchAiReport(scope);
         renderAiReport(report);
-        aiInsightStatus.textContent = "Đã tạo report tài chính.";
+        aiInsightStatus.textContent = t("Đã tạo report tài chính.", "Financial report generated.");
     } catch (error) {
-        aiInsightStatus.textContent = error.message || "Không thể tạo report.";
+        aiInsightStatus.textContent = error.message || t("Không thể tạo report.", "Could not generate report.");
     } finally {
         button.disabled = false;
     }
@@ -1622,14 +1715,22 @@ async function generateAiReport(scope) {
 function renderDashboardExtras(dashboard) {
     savingsRateValue.textContent = `${Number(dashboard.savingsRate || 0).toFixed(1)}%`;
     topCategoryValue.textContent = dashboard.topSpendingCategory
-        ? `${dashboard.topSpendingCategory.category}`
+        ? `${displayCategory(dashboard.topSpendingCategory.category)}`
         : "--";
     biggestExpenseValue.textContent = dashboard.biggestExpense
-        ? `${dashboard.biggestExpense.note} · ${formatCurrency(dashboard.biggestExpense.amount)}`
+        ? `${displayNote(dashboard.biggestExpense.note)} - ${formatCurrency(dashboard.biggestExpense.amount)}`
         : "--";
 
     quickInsightsList.innerHTML = "";
-    (dashboard.quickInsights || []).forEach((text) => {
+    const quickInsightTexts = currentLanguage === "en"
+        ? [
+            dashboard.topSpendingCategory ? `Top spending category this month: ${displayCategory(dashboard.topSpendingCategory.category)} (${formatCurrency(dashboard.topSpendingCategory.total)}).` : "",
+            dashboard.biggestExpense ? `Biggest expense: ${displayNote(dashboard.biggestExpense.note)} at ${formatCurrency(dashboard.biggestExpense.amount)}.` : "",
+            dashboard.comparison?.expenseChange > 0 ? `Expenses increased ${formatCurrency(dashboard.comparison.expenseChange)} versus ${dashboard.comparison.previousMonth}.` : "",
+            dashboard.comparison?.expenseChange < 0 ? `Expenses decreased ${formatCurrency(Math.abs(dashboard.comparison.expenseChange))} versus ${dashboard.comparison.previousMonth}.` : "",
+        ].filter(Boolean)
+        : (dashboard.quickInsights || []);
+    quickInsightTexts.forEach((text) => {
         const item = document.createElement("div");
         item.className = "quick-insight";
         item.textContent = text;
@@ -1639,14 +1740,14 @@ function renderDashboardExtras(dashboard) {
     if (dashboard.recurringTransactions?.length) {
         const recurring = document.createElement("div");
         recurring.className = "quick-insight recurring-insight";
-        recurring.textContent = `Likely recurring: ${dashboard.recurringTransactions.map(item => item.note).slice(0, 3).join(", ")}`;
+        recurring.textContent = t(`Có thể định kỳ: ${dashboard.recurringTransactions.map(item => item.note).slice(0, 3).join(", ")}`, `Likely recurring: ${dashboard.recurringTransactions.map(item => displayNote(item.note)).slice(0, 3).join(", ")}`);
         quickInsightsList.appendChild(recurring);
     }
 }
 
 function groupTransactionsByMonth(transactions) {
     return transactions.reduce((groups, tx) => {
-        const month = (tx.date || "").slice(0, 7) || "Không rõ tháng";
+        const month = (tx.date || "").slice(0, 7) || t("Không rõ tháng", "Unknown month");
         groups[month] = groups[month] || [];
         groups[month].push(tx);
         return groups;
@@ -1658,8 +1759,8 @@ function renderTransactions(transactions) {
     if (!transactions.length) {
         transactionsList.innerHTML = `
             <div class="empty-state">
-                <strong>Không tìm thấy giao dịch</strong>
-                <p>Thử đổi bộ lọc hoặc thêm giao dịch mới để xem phân tích.</p>
+                <strong>${t("Không tìm thấy giao dịch", "No transactions found")}</strong>
+                <p>${t("Thử đổi bộ lọc hoặc thêm giao dịch mới để xem phân tích.", "Try changing filters or adding a new transaction to see analysis.")}</p>
             </div>
         `;
         return;
@@ -1673,34 +1774,34 @@ function renderTransactions(transactions) {
         section.innerHTML = `
             <div class="month-group-header">
                 <h3>${escapeHtml(month)}</h3>
-                <span>${grouped[month].length} giao dịch · chi ${formatCurrency(monthTotal)}</span>
+                <span>${t(`${grouped[month].length} giao dịch - chi ${formatCurrency(monthTotal)}`, `${grouped[month].length} transactions - spent ${formatCurrency(monthTotal)}`)}</span>
             </div>
         `;
         grouped[month].forEach((tx) => {
             const item = document.createElement("div");
             item.className = `transaction-item ${tx.type === "income" ? "income-row" : "expense-row"}`;
             item.innerHTML = `
-                <span><strong>${tx.type === "income" ? "Thu" : "Chi"}</strong></span>
+                <span><strong>${tx.type === "income" ? t("Thu", "Income") : t("Chi", "Expense")}</strong></span>
                 <span>${escapeHtml(formatDate(tx.date))}</span>
-                <span>${escapeHtml(tx.note)}</span>
-                <span>${escapeHtml(tx.category)}</span>
-                <span class="source-badge source-${escapeHtml(tx.source || "manual")}">${escapeHtml({ sample: "Mẫu", import: "CSV", manual: "Tay" }[tx.source] || tx.source || "Tay")}</span>
+                <span>${escapeHtml(displayNote(tx.note))}</span>
+                <span>${escapeHtml(displayCategory(tx.category))}</span>
+                <span class="source-badge source-${escapeHtml(tx.source || "manual")}">${escapeHtml({ sample: t("Mẫu", "Sample"), import: "CSV", manual: t("Tay", "Manual") }[tx.source] || tx.source || t("Tay", "Manual"))}</span>
                 <span style="font-weight:700;">${formatCurrency(tx.amount)}</span>
                 <div class="transaction-actions">
-                    <button class="edit-button" data-id="${tx.id}">Sửa</button>
-                    <button class="delete-button" data-id="${tx.id}">Xóa</button>
+                    <button class="edit-button" data-id="${tx.id}">${t("Sửa", "Edit")}</button>
+                    <button class="delete-button" data-id="${tx.id}">${t("Xóa", "Delete")}</button>
                 </div>
             `;
             item.querySelector(".edit-button").addEventListener("click", () => startEditTransaction(tx));
             item.querySelector(".delete-button").addEventListener("click", async () => {
-                if (!confirm("Bạn chắc chắn muốn xóa giao dịch này?")) {
+                if (!confirm(t("Bạn chắc chắn muốn xóa giao dịch này?", "Are you sure you want to delete this transaction?"))) {
                     return;
                 }
                 try {
                     await deleteTransaction(tx.id);
                     await refreshData();
                 } catch (error) {
-                    alert(error.message || "Xóa giao dịch thất bại. Vui lòng thử lại.");
+                    alert(error.message || t("Xóa giao dịch thất bại. Vui lòng thử lại.", "Could not delete the transaction. Please try again."));
                 }
             });
             section.appendChild(item);
@@ -1711,15 +1812,15 @@ function renderTransactions(transactions) {
 
 async function refreshAiInsight() {
     generateAiInsightBtn.disabled = true;
-    aiInsightStatus.textContent = `Đang phân tích dữ liệu tháng ${filterMonth.value || "hiện tại"}...`;
+    aiInsightStatus.textContent = t(`Đang phân tích dữ liệu tháng ${filterMonth.value || "hiện tại"}...`, `Analyzing data for ${filterMonth.value || "the current month"}...`);
     try {
         const insight = await fetchAiInsight();
         renderAiInsight(insight);
         aiInsightStatus.textContent = insight.source === "openai"
-            ? `Đã tạo phân tích bằng OpenAI cho tháng ${insight.month || filterMonth.value}.`
-            : insight.message || "Đã tạo phân tích dự phòng.";
+            ? t(`Đã tạo phân tích bằng OpenAI cho tháng ${insight.month || filterMonth.value}.`, `Generated OpenAI analysis for ${insight.month || filterMonth.value}.`)
+            : insight.message || t("Đã tạo phân tích dự phòng.", "Generated fallback analysis.");
     } catch (error) {
-        aiInsightStatus.textContent = error.message || "Không thể tạo phân tích AI.";
+        aiInsightStatus.textContent = error.message || t("Không thể tạo phân tích AI.", "Could not generate AI analysis.");
     } finally {
         generateAiInsightBtn.disabled = false;
     }
@@ -1729,7 +1830,7 @@ async function sendVipQuestion() {
     const message = vipAskInput.value.trim();
     if (!message) return;
     vipAskSend.disabled = true;
-    vipAskAnswer.textContent = "LUX AI đang đọc dữ liệu giao dịch...";
+    vipAskAnswer.textContent = t("LUX AI đang đọc dữ liệu giao dịch...", "LUX AI is reading transaction data...");
     try {
         const data = await askAi(message);
         vipAskAnswer.textContent = data.source === "local-fallback" && data.message
@@ -1739,7 +1840,7 @@ async function sendVipQuestion() {
         chatHistory.push({ role: "assistant", content: data.response });
         vipAskInput.value = "";
     } catch (error) {
-        vipAskAnswer.textContent = error.message || "Không thể hỏi AI lúc này.";
+        vipAskAnswer.textContent = error.message || t("Không thể hỏi AI lúc này.", "Could not ask AI right now.");
     } finally {
         vipAskSend.disabled = false;
     }
@@ -1752,7 +1853,7 @@ async function refreshData() {
         if (el.tagName === "DIV") {
             el.innerHTML = '<div class="loading-spinner"></div>';
         } else {
-            el.textContent = "Đang tải...";
+            el.textContent = t("Đang tải...", "Loading...");
         }
     });
 
@@ -1774,7 +1875,7 @@ async function refreshData() {
 
         renderAIMetrics(summary);
         renderFinancialStrategy(summary);
-        trendText.textContent = summary.forecast.trend;
+        trendText.textContent = translateText(summary.forecast.trend);
         forecastIncome.textContent = formatCurrency(summary.forecast.next30DaysIncome);
         forecastExpense.textContent = formatCurrency(summary.forecast.next30DaysExpense);
         forecastSavings.textContent = formatCurrency(summary.forecast.recommendedSavings);
@@ -1782,7 +1883,7 @@ async function refreshData() {
         adviceList.innerHTML = "";
         summary.advice.forEach((line, index) => {
             const p = document.createElement("p");
-            p.textContent = line;
+            p.textContent = currentLanguage === "en" ? translateText(line) : line;
             p.style.animationDelay = `${index * 0.1}s`;
             adviceList.appendChild(p);
         });
@@ -1807,7 +1908,7 @@ async function refreshData() {
         balanceValue.textContent = "--";
         adviceList.innerHTML = "";
         const errorMessage = document.createElement("p");
-        errorMessage.textContent = error.message || "Không thể tải dữ liệu. Vui lòng thử lại.";
+        errorMessage.textContent = error.message || t("Không thể tải dữ liệu. Vui lòng thử lại.", "Could not load data. Please try again.");
         adviceList.appendChild(errorMessage);
     }
 }
@@ -1819,7 +1920,7 @@ function resetTransactionForm() {
     typeInput.value = "expense";
     categoryInput.value = "";
     setDefaultTransactionDate();
-    submitTransactionBtn.textContent = "Lưu giao dịch";
+    submitTransactionBtn.textContent = t("Lưu giao dịch", "Save transaction");
     cancelEditTransactionBtn.classList.add("hidden");
 }
 
@@ -1845,7 +1946,7 @@ function closeTransactionModal() {
 transactionForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     submitTransactionBtn.disabled = true;
-    submitTransactionBtn.textContent = editingTransactionId ? "Đang cập nhật..." : "Đang lưu...";
+    submitTransactionBtn.textContent = editingTransactionId ? t("Đang cập nhật...", "Updating...") : t("Đang lưu...", "Saving...");
     const payload = {
         note: descriptionInput.value.trim(),
         description: descriptionInput.value.trim(),
@@ -1864,10 +1965,10 @@ transactionForm.addEventListener("submit", async (event) => {
         resetTransactionForm();
         await refreshData();
     } catch (error) {
-        alert(error.message || "Lưu giao dịch thất bại. Vui lòng thử lại.");
+        alert(error.message || t("Lưu giao dịch thất bại. Vui lòng thử lại.", "Could not save the transaction. Please try again."));
     } finally {
         submitTransactionBtn.disabled = false;
-        submitTransactionBtn.textContent = editingTransactionId ? "Cập nhật giao dịch" : "Lưu giao dịch";
+        submitTransactionBtn.textContent = editingTransactionId ? t("Cập nhật giao dịch", "Update transaction") : t("Lưu giao dịch", "Save transaction");
     }
 });
 
@@ -1893,7 +1994,7 @@ editTransactionForm.addEventListener("submit", async (event) => {
         closeTransactionModal();
         await refreshData();
     } catch (error) {
-        alert(error.message || "Cập nhật giao dịch thất bại. Vui lòng thử lại.");
+        alert(error.message || t("Cập nhật giao dịch thất bại. Vui lòng thử lại.", "Could not update the transaction. Please try again."));
     }
 });
 
@@ -1921,7 +2022,7 @@ budgetForm.addEventListener("submit", async (event) => {
         resetBudgetForm();
         await refreshData();
     } catch (error) {
-        alert(error.message || "Lưu ngân sách thất bại. Vui lòng thử lại.");
+        alert(error.message || t("Lưu ngân sách thất bại. Vui lòng thử lại.", "Could not save the budget. Please try again."));
     }
 });
 
@@ -1947,7 +2048,7 @@ goalForm.addEventListener("submit", async (event) => {
         goalDeadline.value = "";
         await refreshData();
     } catch (error) {
-        alert(error.message || "Lưu mục tiêu thất bại. Vui lòng thử lại.");
+        alert(error.message || t("Lưu mục tiêu thất bại. Vui lòng thử lại.", "Could not save the goal. Please try again."));
     }
 });
 
@@ -1969,7 +2070,7 @@ vipAskInput.addEventListener("keypress", (event) => {
 });
 loadDemoDataBtn.addEventListener("click", async () => {
     loadDemoDataBtn.disabled = true;
-    loadDemoDataBtn.textContent = "Đang nạp dữ liệu...";
+    loadDemoDataBtn.textContent = t("Đang nạp dữ liệu...", "Loading data...");
     try {
         const result = await loadDemoData();
         setActiveMonth(result.month, false);
@@ -1977,16 +2078,16 @@ loadDemoDataBtn.addEventListener("click", async () => {
         await refreshAiInsight();
         switchTab("overview");
     } catch (error) {
-        alert(error.message || "Không thể nạp dữ liệu mẫu.");
+        alert(error.message || t("Không thể nạp dữ liệu mẫu.", "Could not load sample data."));
     } finally {
         loadDemoDataBtn.disabled = false;
-        loadDemoDataBtn.textContent = "Nạp dữ liệu mẫu 12 tháng";
+        loadDemoDataBtn.textContent = t("Nạp dữ liệu mẫu 12 tháng", "Load 12-month sample data");
     }
 });
 clearChatBtn.addEventListener("click", () => {
     chatHistory = [];
     chatMessages.innerHTML = "";
-    addChatMessage("Đã xóa hội thoại. Bạn có thể hỏi tôi về tháng hiện tại, danh mục rủi ro hoặc kế hoạch tiết kiệm tiếp theo.");
+    addChatMessage(t("Đã xóa hội thoại. Bạn có thể hỏi tôi về tháng hiện tại, danh mục rủi ro hoặc kế hoạch tiết kiệm tiếp theo.", "Conversation cleared. You can ask about the current month, risky categories, or the next savings plan."));
 });
 
 starterChips.forEach((chip) => {
@@ -2015,84 +2116,85 @@ exportReport.addEventListener("click", () => {
     if (filterMonth.value) {
         params.set("month", filterMonth.value);
     }
+    params.set("language", currentLanguage);
     appendSourceParam(params);
     window.open(`/api/export/report?${params.toString()}`, "_blank");
 });
 
 authLoginBtn.addEventListener("click", async () => {
-    authStatus.textContent = "Đang đăng nhập...";
+    authStatus.textContent = t("Đang đăng nhập...", "Signing in...");
     try {
         const result = await submitAuth("login");
-        authStatus.textContent = result.message;
+        authStatus.textContent = translateText(result.message);
         authPassword.value = "";
         await refreshAuthStatus();
     } catch (error) {
-        authStatus.textContent = error.message || "Đăng nhập thất bại.";
+        authStatus.textContent = error.message || t("Đăng nhập thất bại.", "Sign-in failed.");
     }
 });
 
 authRegisterBtn.addEventListener("click", async () => {
-    authStatus.textContent = "Đang tạo tài khoản...";
+    authStatus.textContent = t("Đang tạo tài khoản...", "Creating account...");
     try {
         const result = await submitAuth("register");
-        authStatus.textContent = result.message;
+        authStatus.textContent = translateText(result.message);
         authPassword.value = "";
         await refreshAuthStatus();
     } catch (error) {
-        authStatus.textContent = error.message || "Không thể tạo tài khoản.";
+        authStatus.textContent = error.message || t("Không thể tạo tài khoản.", "Could not create account.");
     }
 });
 
 authLogoutBtn.addEventListener("click", async () => {
     try {
         const result = await logoutAuth();
-        authStatus.textContent = result.message;
+        authStatus.textContent = translateText(result.message);
         await refreshAuthStatus();
     } catch (error) {
-        authStatus.textContent = error.message || "Không thể đăng xuất.";
+        authStatus.textContent = error.message || t("Không thể đăng xuất.", "Could not sign out.");
     }
 });
 
 backupDbBtn.addEventListener("click", async () => {
-    dataStatus.textContent = "Đang chuẩn bị backup DB...";
+    dataStatus.textContent = t("Đang chuẩn bị backup DB...", "Preparing DB backup...");
     try {
         await downloadBackupDatabase();
-        dataStatus.textContent = "Đã tải backup DB.";
+        dataStatus.textContent = t("Đã tải backup DB.", "DB backup downloaded.");
     } catch (error) {
-        dataStatus.textContent = error.message || "Không thể tải backup DB.";
+        dataStatus.textContent = error.message || t("Không thể tải backup DB.", "Could not download DB backup.");
     }
 });
 
 restoreForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (!restoreFile.files.length) {
-        dataStatus.textContent = "Vui lòng chọn file backup SQLite.";
+        dataStatus.textContent = t("Vui lòng chọn file backup SQLite.", "Please choose a SQLite backup file.");
         return;
     }
-    if (!confirm("Restore sẽ thay database hiện tại. App sẽ tạo bản .bak trước khi ghi đè. Tiếp tục?")) {
+    if (!confirm(t("Restore sẽ thay database hiện tại. App sẽ tạo bản .bak trước khi ghi đè. Tiếp tục?", "Restore will replace the current database. The app will create a .bak file before overwriting. Continue?"))) {
         return;
     }
-    dataStatus.textContent = "Đang restore database...";
+    dataStatus.textContent = t("Đang restore database...", "Restoring database...");
     try {
         const result = await restoreDatabase();
-        dataStatus.textContent = result.message;
+        dataStatus.textContent = translateText(result.message);
         await refreshData();
         await refreshAuthStatus();
     } catch (error) {
-        dataStatus.textContent = error.message || "Restore thất bại.";
+        dataStatus.textContent = error.message || t("Restore thất bại.", "Restore failed.");
     }
 });
 
 resetSessionBtn?.addEventListener("click", async () => {
-    sessionStatus.textContent = "Đang làm mới phiên...";
+    sessionStatus.textContent = t("Đang làm mới phiên...", "Refreshing session...");
     resetSessionBtn.disabled = true;
     try {
         await resetClientSessionState();
         await refreshAuthStatus();
         await refreshAiHealthStatus();
-        sessionStatus.textContent = "Đã làm mới phiên. Bạn có thể thử lại thao tác vừa lỗi.";
+        sessionStatus.textContent = t("Đã làm mới phiên. Bạn có thể thử lại thao tác vừa lỗi.", "Session refreshed. You can retry the action that failed.");
     } catch (error) {
-        sessionStatus.textContent = error.message || "Không thể làm mới phiên.";
+        sessionStatus.textContent = error.message || t("Không thể làm mới phiên.", "Could not refresh session.");
     } finally {
         resetSessionBtn.disabled = false;
     }
@@ -2102,77 +2204,77 @@ csvFile.addEventListener("change", () => {
     populateCsvMappingOptions([]);
     csvPreview.className = "csv-preview empty-state";
     csvPreview.textContent = csvFile.files.length
-        ? "Bấm “Xem trước” để app đọc header và gợi ý mapping cột."
-        : "Chọn file rồi bấm “Xem trước” để kiểm tra mapping trước khi import.";
-    csvImportResult.textContent = "Chưa import file nào.";
+        ? t("Bấm “Xem trước” để app đọc header và gợi ý mapping cột.", "Click Preview so the app can read headers and suggest column mapping.")
+        : t("Chọn file rồi bấm “Xem trước” để kiểm tra mapping trước khi import.", "Choose a file and click Preview to check mapping before import.");
+    csvImportResult.textContent = t("Chưa import file nào.", "No file imported yet.");
 });
 
 csvPreviewSubmit.addEventListener("click", async () => {
     if (!csvFile.files.length) {
-        csvPreview.textContent = "Vui lòng chọn file CSV/TSV/XLSX.";
+        csvPreview.textContent = t("Vui lòng chọn file CSV/TSV/XLSX.", "Please choose a CSV/TSV/XLSX file.");
         return;
     }
     csvPreviewSubmit.disabled = true;
-    csvPreviewSubmit.textContent = "Đang preview...";
-    csvPreview.textContent = "Đang đọc file và chuẩn hóa vài dòng đầu...";
+        csvPreviewSubmit.textContent = t("Đang xem trước...", "Previewing...");
+    csvPreview.textContent = t("Đang đọc file và chuẩn hóa vài dòng đầu...", "Reading the file and normalizing the first rows...");
     try {
         const result = await previewCsvFile();
         csvPreview.className = "csv-preview";
         renderCsvPreview(result);
     } catch (error) {
         csvPreview.className = "csv-preview empty-state";
-        csvPreview.textContent = error.message || "Không thể preview file.";
+        csvPreview.textContent = error.message || t("Không thể preview file.", "Could not preview file.");
     } finally {
         csvPreviewSubmit.disabled = false;
-        csvPreviewSubmit.textContent = "Xem trước";
+        csvPreviewSubmit.textContent = t("Xem trước", "Preview");
     }
 });
 
 csvImportForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (!csvFile.files.length) {
-        csvImportResult.textContent = "Vui lòng chọn file CSV/TSV/XLSX.";
+        csvImportResult.textContent = t("Vui lòng chọn file CSV/TSV/XLSX.", "Please choose a CSV/TSV/XLSX file.");
         return;
     }
     csvImportSubmit.disabled = true;
-    csvImportSubmit.textContent = "Đang import...";
-    csvImportResult.textContent = "Đang đọc file...";
+    csvImportSubmit.textContent = t("Đang nhập...", "Importing...");
+    csvImportResult.textContent = t("Đang đọc file...", "Reading file...");
     try {
         const result = await importCsvFile();
         const errorPreview = (result.errors || [])
             .slice(0, 3)
-            .map((item) => `Dòng ${item.row}: ${item.error}`)
+            .map((item) => `${t("Dòng", "Row")} ${item.row}: ${item.error}`)
             .join(" | ");
         csvImportResult.innerHTML = `
-            <strong>${escapeHtml(result.message || "Đã import file")}</strong>
-            <p>Thêm mới: ${Number(result.inserted || 0)} · Bỏ qua trùng: ${Number(result.skippedDuplicates || 0)} · Lỗi: ${Number(result.errorCount || 0)}</p>
+            <strong>${escapeHtml(result.message ? translateText(result.message) : t("Đã nhập file", "File imported"))}</strong>
+            <p>${t("Thêm mới", "Inserted")}: ${Number(result.inserted || 0)} - ${t("Bỏ qua trùng", "Skipped duplicates")}: ${Number(result.skippedDuplicates || 0)} - ${t("Lỗi", "Errors")}: ${Number(result.errorCount || 0)}</p>
             ${errorPreview ? `<p>${escapeHtml(errorPreview)}</p>` : ""}
         `;
         await refreshData();
     } catch (error) {
-        csvImportResult.textContent = error.message || "Import file thất bại.";
+        csvImportResult.textContent = error.message || t("Nhập file thất bại.", "File import failed.");
     } finally {
         csvImportSubmit.disabled = false;
-        csvImportSubmit.textContent = "Import file";
+        csvImportSubmit.textContent = t("Nhập file", "Import file");
     }
 });
 
 csvClearImport?.addEventListener("click", async () => {
-    const confirmed = window.confirm("Xóa tất cả giao dịch đã import? Dữ liệu mẫu và giao dịch nhập tay sẽ được giữ lại.");
+    const confirmed = window.confirm(t("Xóa tất cả giao dịch đã nhập từ file? Dữ liệu mẫu và giao dịch nhập tay sẽ được giữ lại.", "Delete all imported transactions? Sample data and manual transactions will be kept."));
     if (!confirmed) {
         return;
     }
     csvClearImport.disabled = true;
-    csvImportResult.textContent = "Đang xóa dữ liệu import...";
+    csvImportResult.textContent = t("Đang xóa dữ liệu đã nhập...", "Deleting imported data...");
     try {
         const result = await clearImportedTransactions();
         csvImportResult.innerHTML = `
-            <strong>${escapeHtml(result.message || "Đã xóa dữ liệu import")}</strong>
-            <p>Đã xóa: ${Number(result.deleted || 0)} giao dịch import.</p>
+            <strong>${escapeHtml(result.message ? translateText(result.message) : t("Đã xóa dữ liệu đã nhập", "Imported data deleted"))}</strong>
+            <p>${t("Đã xóa", "Deleted")}: ${Number(result.deleted || 0)} ${t("giao dịch nhập từ file", "imported transactions")}.</p>
         `;
         await refreshData();
     } catch (error) {
-        csvImportResult.textContent = error.message || "Không thể xóa dữ liệu import.";
+        csvImportResult.textContent = error.message || t("Không thể xóa dữ liệu đã nhập.", "Could not delete imported data.");
     } finally {
         csvClearImport.disabled = false;
     }
@@ -2229,7 +2331,7 @@ async function sendChatMessage() {
         if (chatMessages.contains(typingDiv)) {
             chatMessages.removeChild(typingDiv);
         }
-        addChatMessage(error.message || "Không thể kết nối với AI. Vui lòng thử lại.");
+        addChatMessage(error.message || t("Không thể kết nối với AI. Vui lòng thử lại.", "Could not connect to AI. Please try again."));
     }
 }
 
@@ -2240,7 +2342,7 @@ chatInput.addEventListener("keypress", (e) => {
 
 // Add welcome message
 initLanguage();
-addChatMessage("Xin chào! Tôi là AI tài chính của bạn. Hãy hỏi tôi về tiết kiệm, chi tiêu, đầu tư, ngân sách hoặc mục tiêu nhé! 💰");
+addChatMessage(t("Xin chào! Tôi là AI tài chính của bạn. Hãy hỏi tôi về tiết kiệm, chi tiêu, đầu tư, ngân sách hoặc mục tiêu nhé!", "Hello! I am your financial AI. Ask me about savings, spending, investing, budgets, or goals."));
 
 populateCsvMappingOptions([]);
 initTheme();

@@ -2650,6 +2650,95 @@ body.dark-theme {
 
 .header-content .theme-panel {
     width: auto;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.language-picker {
+    display: grid;
+    grid-template-columns: 38px minmax(128px, auto);
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding: 7px;
+    border: 1px solid rgba(148, 163, 184, 0.32);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.72);
+    box-shadow: 0 14px 32px rgba(15, 23, 42, 0.08);
+    backdrop-filter: blur(16px);
+}
+
+body.dark-theme .language-picker {
+    background: rgba(15, 23, 42, 0.58);
+    border-color: rgba(148, 163, 184, 0.24);
+}
+
+.language-picker-icon {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #2563eb, #16a34a);
+    color: #ffffff;
+    box-shadow: 0 10px 22px rgba(37, 99, 235, 0.24);
+}
+
+.language-picker-icon svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.language-picker select {
+    min-width: 128px;
+    height: 38px;
+    padding: 0 34px 0 12px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    box-shadow: none;
+    color: #111827;
+    font-family: Calibri, "Segoe UI", Arial, sans-serif;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+body.dark-theme .language-picker select {
+    color: #e5e7eb;
+}
+
+.language-picker select option {
+    color: #111827;
+    background: #ffffff;
+    font-family: Calibri, "Segoe UI", Arial, sans-serif;
+}
+
+.language-picker select:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.14);
+}
+
+.theme-control-group {
+    display: grid;
+    gap: 7px;
+}
+
+.header-content .theme-buttons {
+    gap: 8px;
+}
+
+.header-content .theme-option {
+    min-width: 68px;
+    padding: 10px 14px;
+    border-radius: 999px;
+    font-size: 0.86rem;
 }
 
 .header-content {
@@ -2773,6 +2862,24 @@ body.dark-theme .expense-card .metric-pill {
 @media (max-width: 700px) {
     .brand-block {
         align-items: flex-start;
+    }
+
+    .header-content .theme-panel {
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    .language-picker,
+    .theme-control-group {
+        width: 100%;
+    }
+
+    .language-picker {
+        grid-template-columns: 38px 1fr;
+    }
+
+    .header-content .theme-buttons {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .brand-mark {

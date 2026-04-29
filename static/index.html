@@ -17,21 +17,32 @@
                 <div class="brand-block">
                     <div class="brand-mark">L</div>
                     <div>
-                        <span class="brand-eyebrow">Money intelligence dashboard</span>
+                        <span class="brand-eyebrow">Bảng điều khiển tài chính thông minh</span>
                         <h1>Lux Money AI</h1>
                         <p>Theo dõi dòng tiền, ngân sách và thói quen chi tiêu theo từng tháng với AI phân tích thực tế.</p>
                     </div>
                 </div>
                 <div class="theme-panel">
-                    <div class="theme-label">Ngôn ngữ</div>
-                    <div class="theme-buttons">
-                        <button id="language-vi" class="theme-option">Tiếng Việt</button>
-                        <button id="language-en" class="theme-option">English</button>
-                    </div>
-                    <div class="theme-label">Chọn giao diện</div>
-                    <div class="theme-buttons">
-                        <button id="theme-light" class="theme-option">Sáng</button>
-                        <button id="theme-dark" class="theme-option">Tối</button>
+                    <label class="language-picker" aria-label="Ngôn ngữ">
+                        <span class="language-picker-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" focusable="false">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M2 12h20"></path>
+                                <path d="M12 2a15.3 15.3 0 0 1 0 20"></path>
+                                <path d="M12 2a15.3 15.3 0 0 0 0 20"></path>
+                            </svg>
+                        </span>
+                        <select id="language-select">
+                            <option value="vi">Tiếng Việt</option>
+                            <option value="en">English</option>
+                        </select>
+                    </label>
+                    <div class="theme-control-group">
+                        <div class="theme-label">Chọn giao diện</div>
+                        <div class="theme-buttons">
+                            <button id="theme-light" class="theme-option">Sáng</button>
+                            <button id="theme-dark" class="theme-option">Tối</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -51,7 +62,7 @@
             <div class="section-header">
                 <div>
                     <h2>Tổng quan theo tháng</h2>
-                    <p class="section-subtitle">Chọn tháng để dashboard, ngân sách, giao dịch và AI insight chỉ tính trên đúng kỳ đó.</p>
+                    <p class="section-subtitle">Chọn tháng để bảng điều khiển, ngân sách, giao dịch và phân tích AI chỉ tính trên đúng kỳ đó.</p>
                 </div>
                 <label class="month-control">Tháng đang xem
                     <input type="month" id="overview-month" />
@@ -131,21 +142,21 @@
                 </div>
             </div>
             <div class="card overview-card income-card">
-                <span class="metric-pill">IN</span>
+                <span class="metric-pill">THU</span>
                 <div>
                     <h3>Thu nhập</h3>
                     <p id="income-value">0</p>
                 </div>
             </div>
             <div class="card overview-card expense-card">
-                <span class="metric-pill">OUT</span>
+                <span class="metric-pill">CHI</span>
                 <div>
                     <h3>Chi tiêu</h3>
                     <p id="expense-value">0</p>
                 </div>
             </div>
             <div class="card overview-card balance-card">
-                <span class="metric-pill">NET</span>
+                <span class="metric-pill">RÒNG</span>
                 <div>
                     <h3>Số dư</h3>
                     <p id="balance-value">0</p>
@@ -154,33 +165,33 @@
             <div class="card overview-card ai-card">
                 <span class="metric-pill">AI</span>
                 <div>
-                    <h3>VIP Score</h3>
+                    <h3>Điểm VIP</h3>
                     <p id="ai-score-value">0</p>
                 </div>
             </div>
             <div class="card overview-card ai-card">
-                <span class="metric-pill">RISK</span>
+                <span class="metric-pill">RR</span>
                 <div>
-                    <h3>VIP Risk</h3>
+                    <h3>Rủi ro VIP</h3>
                     <p id="risk-level-value">Trung bình</p>
                 </div>
             </div>
             <div class="card overview-card ai-card">
-                <span class="metric-pill">HLTH</span>
+                <span class="metric-pill">SK</span>
                 <div>
-                    <h3>Health Index</h3>
+                    <h3>Chỉ số sức khỏe</h3>
                     <p id="health-index-value">--</p>
                 </div>
             </div>
             <div class="card overview-card ai-card">
-                <span class="metric-pill">BUD</span>
+                <span class="metric-pill">NS</span>
                 <div>
                     <h3>Ngân sách tuân thủ</h3>
                     <p id="budget-adherence-value">--</p>
                 </div>
             </div>
             <div class="card overview-card premium-card">
-                <span class="metric-pill">SAVE</span>
+                <span class="metric-pill">TK</span>
                 <div>
                     <h3>Tỷ lệ tiết kiệm</h3>
                     <p id="savings-rate-value">--</p>
@@ -205,11 +216,11 @@
         <section class="panel tab-panel" data-tab="transactions">
             <div class="section-header">
                 <div>
-                    <h2>Transaction Command Center</h2>
+                    <h2>Trung tâm giao dịch</h2>
                     <p class="section-subtitle">Lọc, tìm kiếm, sắp xếp và rà soát giao dịch theo tháng.</p>
                 </div>
                 <button id="export-csv">Xuất báo cáo CSV</button>
-                <button id="export-report" class="secondary-button">Xuất report HTML</button>
+                <button id="export-report" class="secondary-button">Xuất báo cáo HTML</button>
             </div>
             <div class="filter-grid">
                 <label>Tháng
@@ -221,7 +232,7 @@
                         <option value="sample">Dữ liệu mẫu</option>
                         <option value="real">Dữ liệu thật</option>
                         <option value="manual">Nhập tay</option>
-                        <option value="import">Import CSV</option>
+                        <option value="import">Nhập CSV</option>
                     </select>
                 </label>
                 <label>Loại
@@ -251,8 +262,8 @@
         <section class="panel tab-panel" data-tab="transactions">
             <div class="section-header">
                 <div>
-                    <h2>Import giao dịch</h2>
-                    <p class="section-subtitle">Upload CSV, TSV hoặc XLSX ngân hàng/file tự xuất. Bỏ trống mapping nếu file dùng tên cột phổ biến như date, amount, note.</p>
+                    <h2>Nhập giao dịch</h2>
+                    <p class="section-subtitle">Tải lên file CSV, TSV hoặc XLSX từ ngân hàng/file tự xuất. Bỏ trống ánh xạ nếu file dùng tên cột phổ biến như ngày, số tiền, ghi chú.</p>
                 </div>
             </div>
             <form id="csv-import-form" class="form-grid import-grid">
@@ -289,7 +300,7 @@
                     <select id="csv-category-column" data-placeholder="Tự phân loại"></select>
                 </label>
                 <button type="button" id="csv-preview-submit" class="secondary-button">Xem trước</button>
-                <button type="submit" id="csv-import-submit">Import file</button>
+                <button type="submit" id="csv-import-submit">Nhập file</button>
                 <button type="button" id="csv-clear-import" class="secondary-button danger-button">Xóa dữ liệu import</button>
             </form>
             <div id="csv-preview" class="csv-preview empty-state">Chọn file rồi bấm “Xem trước” để kiểm tra mapping trước khi import.</div>
@@ -304,7 +315,7 @@
         <section class="panel analytics-panel tab-panel active" data-tab="overview">
             <div class="section-header">
                 <div>
-                    <h2>Analytics 12 tháng</h2>
+                <h2>Phân tích 12 tháng</h2>
                     <p class="section-subtitle">Nhìn nhanh dòng tiền, tỷ lệ tiết kiệm và tháng có chi tiêu cao nhất.</p>
                 </div>
             </div>
@@ -316,7 +327,7 @@
                     <div id="analytics-comparison" class="analytics-comparison"></div>
                 </div>
                 <div class="advanced-analytics-card">
-                    <h3>Heatmap chi tiêu tháng</h3>
+                    <h3>Bản đồ nhiệt chi tiêu tháng</h3>
                     <div id="daily-heatmap" class="daily-heatmap"></div>
                 </div>
             </div>
@@ -341,8 +352,8 @@
         <section class="panel vip-panel tab-panel active" data-tab="overview">
             <div class="section-header">
                 <div>
-                    <h2>LUX AI VIP Insights</h2>
-                    <p class="section-subtitle">Bản phân tích executive cho tháng hiện tại: rủi ro, cơ hội và hành động ưu tiên.</p>
+                    <h2>Góc nhìn VIP từ LUX AI</h2>
+                    <p class="section-subtitle">Bản phân tích điều hành cho tháng hiện tại: rủi ro, cơ hội và hành động ưu tiên.</p>
                 </div>
                 <button id="load-demo-data" class="secondary-button">Nạp dữ liệu mẫu 12 tháng</button>
             </div>
@@ -360,7 +371,7 @@
                             <strong id="vip-focus-value">--</strong>
                         </div>
                         <div>
-                            <span>Risk</span>
+                            <span>Rủi ro</span>
                             <strong id="vip-risk-value">--</strong>
                         </div>
                     </div>
@@ -372,14 +383,14 @@
             </div>
             <div class="vip-ask-box">
                 <div>
-                    <h3>Hỏi LUX AI ngay trên dashboard</h3>
+                    <h3>Hỏi LUX AI ngay trên bảng điều khiển</h3>
                     <p class="section-subtitle">Ví dụ: “Tháng này tôi chi nhiều nhất ở đâu?” hoặc “Làm sao tiết kiệm hơn tháng sau?”</p>
                 </div>
                 <div class="vip-ask-row">
                     <input type="text" id="vip-ask-input" placeholder="Nhập câu hỏi bất kỳ về dữ liệu tài chính..." />
                     <button id="vip-ask-send">Hỏi AI</button>
                 </div>
-                <div id="vip-ask-answer" class="vip-ask-answer">AI sẽ trả lời dựa trên giao dịch thật trong app.</div>
+                <div id="vip-ask-answer" class="vip-ask-answer">AI sẽ trả lời dựa trên giao dịch thật trong ứng dụng.</div>
             </div>
         </section>
 
@@ -445,7 +456,7 @@
             <div class="section-header">
                 <div>
                     <h2>Khoản định kỳ</h2>
-                    <p class="section-subtitle">Tự phát hiện các khoản lặp lại như thuê nhà, hóa đơn, subscription hoặc đầu tư định kỳ từ giao dịch hiện có.</p>
+                    <p class="section-subtitle">Tự phát hiện các khoản lặp lại như thuê nhà, hóa đơn, đăng ký dịch vụ hoặc đầu tư định kỳ từ giao dịch hiện có.</p>
                 </div>
             </div>
             <div id="recurring-summary" class="recurring-summary"></div>
@@ -457,13 +468,13 @@
             <div class="ai-insight-panel">
                 <div class="section-header">
                     <div>
-                        <h3>AI Spending Insights</h3>
+                        <h3>Phân tích chi tiêu bằng AI</h3>
                         <p>Phân tích giao dịch bằng OpenAI và đề xuất hành động tiếp theo.</p>
                     </div>
                     <div class="ai-report-actions">
                         <button id="generate-ai-insight" class="secondary-button">Tạo phân tích AI</button>
-                        <button id="generate-month-report" class="secondary-button">Report tháng</button>
-                        <button id="generate-year-report" class="secondary-button">Report 12 tháng</button>
+                        <button id="generate-month-report" class="secondary-button">Báo cáo tháng</button>
+                        <button id="generate-year-report" class="secondary-button">Báo cáo 12 tháng</button>
                     </div>
                 </div>
                 <p id="ai-insight-status" class="status-text">Sẵn sàng phân tích dữ liệu giao dịch.</p>
@@ -478,7 +489,7 @@
             <div class="chat-container">
                 <div class="chat-product-header">
                     <div>
-                        <h3>LUX AI Assistant</h3>
+                    <h3>Trợ lý LUX AI</h3>
                         <p class="section-subtitle">Hỏi tự do về chi tiêu, ngân sách, so sánh tháng và kế hoạch tiết kiệm. AI sẽ dùng dữ liệu giao dịch hiện có.</p>
                     </div>
                     <label class="ai-scope-control">Phạm vi
@@ -516,13 +527,13 @@
         <section class="panel tab-panel data-panel" data-tab="data">
             <div class="section-header">
                 <div>
-                    <h2>Dữ liệu, tài khoản & cài đặt app</h2>
-                    <p class="section-subtitle">Backup/restore SQLite, đăng nhập local và cài app như PWA. Dữ liệu mẫu hiện tại không bị xóa trừ khi bạn restore DB khác.</p>
+                    <h2>Dữ liệu, tài khoản & cài đặt ứng dụng</h2>
+                    <p class="section-subtitle">Sao lưu/khôi phục SQLite, đăng nhập cục bộ và cài ứng dụng như PWA. Dữ liệu mẫu hiện tại không bị xóa trừ khi bạn khôi phục DB khác.</p>
                 </div>
             </div>
             <div class="data-grid">
                 <div class="data-card">
-                    <h3>Tài khoản local</h3>
+                    <h3>Tài khoản cục bộ</h3>
                     <p id="auth-status" class="section-subtitle">Đang kiểm tra trạng thái...</p>
                     <form id="auth-form" class="form-grid compact-form">
                         <label>Email
@@ -542,8 +553,8 @@
                     </form>
                 </div>
                 <div class="data-card">
-                    <h3>Backup / Restore</h3>
-                    <p class="section-subtitle">Backup tải file `finance.db`. Restore sẽ thay DB hiện tại và app tự tạo bản `.bak` trước khi ghi đè. Trên web public, phần này chỉ dành cho admin.</p>
+                    <h3>Sao lưu / Khôi phục</h3>
+                    <p class="section-subtitle">Sao lưu tải file `finance.db`. Khôi phục sẽ thay DB hiện tại và ứng dụng tự tạo bản `.bak` trước khi ghi đè. Trên web công khai, phần này chỉ dành cho quản trị viên.</p>
                     <div class="form-actions">
                         <button type="button" id="backup-db">Tải backup DB</button>
                     </div>
@@ -551,18 +562,18 @@
                         <label>File backup SQLite
                             <input type="file" id="restore-file" accept=".db,.sqlite,.sqlite3,application/octet-stream" />
                         </label>
-                        <button type="submit" class="danger-fill">Restore DB</button>
+                        <button type="submit" class="danger-fill">Khôi phục DB</button>
                     </form>
                     <p id="data-status" class="status-text">Chưa có thao tác dữ liệu.</p>
                 </div>
                 <div class="data-card">
                     <h3>PWA</h3>
-                    <p class="section-subtitle">App có manifest và service worker để chạy giống app cài đặt trên máy hỗ trợ PWA.</p>
+                    <p class="section-subtitle">Ứng dụng có manifest và service worker để chạy giống ứng dụng đã cài trên máy hỗ trợ PWA.</p>
                     <p id="pwa-status" class="status-text">Đang kiểm tra PWA...</p>
                 </div>
                 <div class="data-card">
                     <h3>Sửa lỗi phiên</h3>
-                    <p class="section-subtitle">Dùng khi trình duyệt báo CSRF token không hợp lệ sau khi server restart, login/logout hoặc PWA cache bản cũ.</p>
+                    <p class="section-subtitle">Dùng khi trình duyệt báo CSRF token không hợp lệ sau khi server khởi động lại, đăng nhập/đăng xuất hoặc PWA lưu bản cũ.</p>
                     <button type="button" id="reset-session" class="secondary-button">Làm mới phiên</button>
                     <p id="session-status" class="status-text">Sẵn sàng.</p>
                 </div>
